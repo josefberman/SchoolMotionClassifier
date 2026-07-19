@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from src.classify.train import train_classifier
+
+
+def main() -> None:
+    report = train_classifier()
+    print(json.dumps({k: report[k] for k in report if k != "classification_report"}, indent=2))
+    if "sim_test_accuracy" in report:
+        print(f"sim_test_accuracy={report['sim_test_accuracy']:.3f} macro_f1={report['sim_test_macro_f1']:.3f}")
+
+
+if __name__ == "__main__":
+    main()

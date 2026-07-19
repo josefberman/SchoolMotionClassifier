@@ -1,0 +1,20 @@
+behavior: traveling_polarized
+w_r: 1.8
+w_o: 3.2
+w_a: 0.55
+sigma_theta: 0.05
+omega_max: 0.40
+s_cruise: 0.95
+tau_s: 5.0
+a_max: 0.25
+r_repulse: 14.0
+r_orient: 85.0
+r_attract: 120.0
+d0: 24.0
+w_circ: 0.0
+arena:
+  w_wall: 1.8
+burn_in: 90
+record_frames: 450
+threat:
+  enabled: false

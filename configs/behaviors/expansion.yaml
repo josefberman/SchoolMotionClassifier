@@ -1,0 +1,30 @@
+behavior: expansion_burst
+w_r: 1.6
+w_o: 1.6
+w_a: 0.7
+sigma_theta: 0.10
+omega_max: 0.60
+s_cruise: 0.85
+s_escape: 2.8
+tau_s: 3.0
+a_max: 0.45
+r_repulse: 14.0
+r_orient: 55.0
+r_attract: 120.0
+d0: 24.0
+burn_in: 80
+record_frames: 450
+threat:
+  enabled: true
+  mode: startle
+  start_frame: 140
+  duration: 30
+  predator_speed: 4.0
+  predator_radius: 160.0
+  flee_angle_deg: 45.0
+  w_p: 5.0
+  escape_duration: 70
+  z_thr: 0.25
+  beta_p: 2.5
+  beta_n: 1.8
+  tau_z: 4.0

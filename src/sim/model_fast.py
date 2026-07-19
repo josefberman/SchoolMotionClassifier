@@ -1,0 +1,337 @@
+"""Vectorized-ish school step for faster bulk generation.
+
+Uses kNN instead of Voronoi (still local, anisotropic via blind spot approx).
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
+
+from src.sim.model import SimResult, STATE_BASELINE, STATE_FOUNTAIN, STATE_STARTLE, STATE_COMPACT, STATE_RECOVER, _wrap
+
+
+def _knn_idx(pos: np.ndarray, k: int) -> np.ndarray:
+    n = pos.shape[0]
+    k = min(k, n - 1)
+    d2 = np.sum((pos[:, None, :] - pos[None, :, :]) ** 2, axis=-1)
+    np.fill_diagonal(d2, np.inf)
+    return np.argpartition(d2, kth=k, axis=1)[:, :k]
+
+
+class FastSchoolSimulator:
+    def __init__(self, n: int, cfg: dict[str, Any], seed: int = 0):
+        self.n = n
+        self.cfg = cfg
+        self.rng = np.random.default_rng(seed)
+        self.dt = float(cfg["dt"])
+        self.fps = float(cfg["fps"])
+        arena = cfg["arena"]
+        self.center = np.asarray(arena["center"], dtype=np.float64)
+        self.radius = float(arena["radius"])
+        self.wall_margin = float(arena["wall_margin"])
+        self.w_wall = float(arena["w_wall"])
+        self.k = min(8, max(3, n - 1))
+        self._neigh_idx: np.ndarray | None = None
+        self._neigh_age = 999
+
+        self.pos = np.zeros((n, 2))
+        self.theta = np.zeros(n)
+        self.speed = np.full(n, float(cfg["s_cruise"]))
+        self.state = np.full(n, STATE_BASELINE, dtype=np.int32)
+        self.state_timer = np.zeros(n)
+        self.z = np.zeros(n)
+        self.circ_sign = np.ones(n)
+        self.predator_pos = None
+        self.predator_vel = None
+        self.frame = 0
+        self.d0_base = float(cfg["d0"])
+        self.d0 = np.full(n, self.d0_base)
+        self.w_r = np.full(n, float(cfg["w_r"]))
+        self.w_o = np.full(n, float(cfg["w_o"]))
+        self.w_a = np.full(n, float(cfg["w_a"]))
+        self.w_p = np.zeros(n)
+        self.s_star = np.full(n, float(cfg["s_cruise"]))
+        self._init_agents()
+
+    def _init_agents(self) -> None:
+        cfg = self.cfg
+        ang = self.rng.uniform(0, 2 * np.pi, self.n)
+        rad = self.rng.uniform(0, 0.35 * self.radius, self.n)
+        self.pos[:, 0] = self.center[0] + rad * np.cos(ang)
+        self.pos[:, 1] = self.center[1] + rad * np.sin(ang)
+        behavior = cfg.get("behavior", "traveling_polarized")
+        if behavior == "milling":
+            r = self.pos - self.center
+            base = np.arctan2(r[:, 1], r[:, 0]) + np.pi / 2
+            frac_bi = float(cfg.get("bidirectional_frac", 0.0))
+            if frac_bi > 0:
+                flip = self.rng.random(self.n) < frac_bi
+                self.circ_sign = np.where(flip, -1.0, 1.0)
+                self.theta = base + np.where(flip, np.pi, 0.0)
+            else:
+                sense = 1.0 if self.rng.random() < 0.5 else -1.0
+                self.circ_sign[:] = sense
+                self.theta = np.arctan2(r[:, 1], r[:, 0]) + sense * np.pi / 2
+            self.theta += self.rng.normal(0, 0.2, self.n)
+        elif behavior == "swarming":
+            self.theta = self.rng.uniform(0, 2 * np.pi, self.n)
+            self.speed *= self.rng.uniform(0.7, 1.1, self.n)
+        else:
+            h0 = self.rng.uniform(0, 2 * np.pi)
+            self.theta = h0 + self.rng.normal(0, 0.25, self.n)
+        self.theta = np.mod(self.theta, 2 * np.pi)
+
+    def headings(self) -> np.ndarray:
+        return np.stack((np.cos(self.theta), np.sin(self.theta)), axis=1)
+
+    def velocities(self) -> np.ndarray:
+        return self.speed[:, None] * self.headings()
+
+    def _social(self, headings: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        cfg = self.cfg
+        n = self.n
+        # Refresh neighbourhood every few frames (cheaper for large N)
+        refresh = 1 if n <= 40 else 3
+        if self._neigh_idx is None or self._neigh_age >= refresh:
+            self._neigh_idx = _knn_idx(self.pos, self.k)
+            self._neigh_age = 0
+        else:
+            self._neigh_age += 1
+        idx = self._neigh_idx
+        t_r = np.zeros(n)
+        t_o = np.zeros(n)
+        t_a = np.zeros(n)
+        r_rep = float(cfg["r_repulse"])
+        r_ori = float(cfg["r_orient"])
+        r_att = float(cfg["r_attract"])
+        cross_scale = float(cfg.get("cross_align_scale", 1.0))
+        blind_cos = np.cos(np.pi - np.deg2rad(float(cfg["blind_half_deg"])))
+
+        for i in range(n):
+            pi = self.pos[i]
+            hi = headings[i]
+            d0_i = self.d0[i]
+            for j in idx[i]:
+                dvec = self.pos[j] - pi
+                dist = np.hypot(dvec[0], dvec[1])
+                if dist < 1e-9:
+                    continue
+                u = dvec / dist
+                if hi[0] * u[0] + hi[1] * u[1] < blind_cos:
+                    continue
+                if dist < max(r_rep, d0_i):
+                    desired = np.arctan2(-u[1], -u[0])
+                    w = (max(r_rep, d0_i) - dist) / max(r_rep, d0_i)
+                    t_r[i] += w * _wrap(desired - self.theta[i])
+                if dist < r_ori:
+                    align_w = cross_scale if (hi[0] * headings[j, 0] + hi[1] * headings[j, 1] < 0) else 1.0
+                    t_o[i] += align_w * _wrap(self.theta[j] - self.theta[i]) * (1.0 - dist / r_ori)
+                if d0_i < dist < r_att:
+                    desired = np.arctan2(u[1], u[0])
+                    w = (dist - d0_i) / (r_att - d0_i + 1e-9)
+                    t_a[i] += w * _wrap(desired - self.theta[i])
+        return t_r, t_o, t_a
+
+    def _wall(self) -> np.ndarray:
+        # Soften walls during startle so expansion can register
+        wall_scale = 0.15 if np.any(self.state == STATE_STARTLE) else 1.0
+        rel = self.pos - self.center
+        dist = np.linalg.norm(rel, axis=1)
+        torque = np.zeros(self.n)
+        margin_start = self.radius - self.wall_margin
+        near = dist > margin_start
+        if np.any(near) and wall_scale > 0:
+            radial = rel[near] / np.maximum(dist[near, None], 1e-9)
+            inward = -radial
+            strength = ((dist[near] - margin_start) / max(self.wall_margin, 1e-6)) ** 2
+            desired = np.arctan2(inward[:, 1], inward[:, 0])
+            torque[near] = self.w_wall * wall_scale * strength * _wrap(desired - self.theta[near])
+        # Allow temporary overshoot during startle; hard clamp only far outside
+        limit = self.radius * (1.25 if np.any(self.state == STATE_STARTLE) else 1.0)
+        outside = dist > limit
+        if np.any(outside):
+            r_out = rel[outside] / np.maximum(dist[outside, None], 1e-9)
+            self.pos[outside] = self.center + r_out * (self.radius * 0.98)
+        return torque
+
+    def _predator(self) -> np.ndarray:
+        torque = np.zeros(self.n)
+        if self.predator_pos is None or self.predator_vel is None:
+            return torque
+        cfg_t = self.cfg["threat"]
+        flee_ang = np.deg2rad(float(cfg_t["flee_angle_deg"]))
+        resp = float(cfg_t["predator_radius"])
+        pv = self.predator_vel
+        rpi = self.pos - self.predator_pos
+        dist = np.linalg.norm(rpi, axis=1)
+        active = dist < resp
+        if not np.any(active):
+            return torque
+        radial = rpi[active] / np.maximum(dist[active, None], 1e-9)
+        cross = pv[0] * rpi[active, 1] - pv[1] * rpi[active, 0]
+        sgn = np.where(cross >= 0, 1.0, -1.0)
+        ca, sa = np.cos(flee_ang), np.sin(flee_ang)
+        fx = radial[:, 0] * ca - sgn * radial[:, 1] * sa
+        fy = radial[:, 1] * ca + sgn * radial[:, 0] * sa
+        desired = np.arctan2(fy, fx)
+        strength = 1.0 - dist[active] / resp
+        torque[active] = strength * _wrap(desired - self.theta[active])
+        self.z[active] += float(cfg_t["beta_p"]) * strength * self.dt
+        return torque
+
+    def _update_threat(self) -> None:
+        cfg = self.cfg
+        threat = cfg["threat"]
+        if not threat.get("enabled"):
+            return
+        mode = threat.get("mode")
+        start = int(threat["start_frame"])
+        dur = int(threat["duration"])
+        t = self.frame
+
+        if mode in ("fountain", "startle", "compact") and start <= t < start + dur:
+            if self.predator_pos is None:
+                y0 = float(np.mean(self.pos[:, 1]))
+                spd = float(threat["predator_speed"])
+                self.predator_pos = np.array([self.center[0] - self.radius - 50.0, y0])
+                self.predator_vel = np.array([spd, 0.0])
+            else:
+                self.predator_pos = self.predator_pos + self.predator_vel * self.dt
+        elif t >= start + dur:
+            self.predator_pos = None
+            self.predator_vel = None
+
+        if mode == "startle" and start <= t < start + dur + int(threat["escape_duration"]):
+            idx = _knn_idx(self.pos, min(5, self.n - 1))
+            z_thr = float(threat["z_thr"])
+            # Direct threat elevates z strongly
+            if self.predator_pos is not None:
+                dpred = np.linalg.norm(self.pos - self.predator_pos, axis=1)
+                close = dpred < float(threat["predator_radius"])
+                self.z[close] += float(threat["beta_p"]) * 0.8
+            dz = -self.z / max(float(threat["tau_z"]), 1e-6)
+            for i in range(self.n):
+                for j in idx[i]:
+                    if self.z[j] > z_thr or self.state[j] == STATE_STARTLE:
+                        dz[i] += float(threat["beta_n"]) * 0.35
+            self.z = np.clip(self.z + dz * self.dt, 0, 5)
+            # First frame of threat: seed a core of startled fish
+            if t == start:
+                self.z[:] = np.maximum(self.z, z_thr + 0.1)
+            newly = (self.z > z_thr) & (self.state != STATE_STARTLE)
+            if np.any(newly):
+                self.state[newly] = STATE_STARTLE
+                self.state_timer[newly] = float(threat["escape_duration"]) * self.dt
+                self.s_star[newly] = float(cfg["s_escape"])
+                self.speed[newly] = np.maximum(self.speed[newly], float(cfg["s_escape"]) * 0.85)
+                self.w_r[newly] = float(cfg["w_r"]) * 3.0
+                self.w_a[newly] = float(cfg["w_a"]) * 0.1
+                self.w_o[newly] = float(cfg["w_o"]) * 0.1
+                # Radial outward escape from school centroid (+ noise)
+                away = self.pos[newly] - self.pos.mean(axis=0)
+                if self.predator_pos is not None:
+                    away = away + 0.7 * (self.pos[newly] - self.predator_pos)
+                self.theta[newly] = np.arctan2(away[:, 1], away[:, 0]) + self.rng.normal(
+                    0, 0.5, int(np.sum(newly))
+                )
+
+        if mode == "fountain" and start <= t < start + dur:
+            self.state[:] = STATE_FOUNTAIN
+            self.w_p[:] = float(threat["w_p"])
+            self.w_a[:] = float(cfg["w_a"]) * 0.7
+            self.w_o[:] = float(cfg["w_o"]) * 0.5
+
+        if mode == "compact" and start <= t < start + dur:
+            self.state[:] = STATE_COMPACT
+            elapsed = (t - start) * self.dt
+            tau = float(threat["compact_tau"]) * self.dt
+            delta = float(threat["compact_delta_d0"])
+            factor = 1.0 - np.exp(-elapsed / max(tau, 1e-6))
+            self.d0[:] = np.maximum(8.0, self.d0_base - delta * factor)
+            self.w_a[:] = float(cfg["w_a"]) * 2.2
+            self.w_o[:] = float(cfg["w_o"]) * 0.5
+            self.w_r[:] = float(cfg["w_r"]) * 0.7
+            self.s_star[:] = float(cfg["s_cruise"]) * 0.6
+            # Mild centripetal bias via attraction to local neighbors already; boost by shrinking d0
+
+        recover_start = start + dur
+        if t >= recover_start:
+            if mode == "startle":
+                self.state_timer -= self.dt
+                done = (self.state == STATE_STARTLE) & (self.state_timer <= 0)
+                if np.any(done):
+                    self.state[done] = STATE_RECOVER
+            alpha = 0.08
+            self.w_r += alpha * (float(cfg["w_r"]) - self.w_r)
+            self.w_o += alpha * (float(cfg["w_o"]) - self.w_o)
+            self.w_a += alpha * (float(cfg["w_a"]) - self.w_a)
+            self.w_p *= 1.0 - alpha
+            self.d0 += alpha * (self.d0_base - self.d0)
+            self.s_star += alpha * (float(cfg["s_cruise"]) - self.s_star)
+            if t > recover_start + 90:
+                self.state[:] = STATE_BASELINE
+                self.z[:] = 0.0
+
+    def step(self) -> None:
+        cfg = self.cfg
+        self._update_threat()
+        headings = self.headings()
+        t_r, t_o, t_a = self._social(headings)
+        t_w = self._wall()
+        t_p = self._predator()
+        t_circ = np.zeros(self.n)
+        w_circ = float(cfg.get("w_circ", 0.0))
+        if w_circ > 0:
+            r = self.pos - self.center
+            desired = np.arctan2(r[:, 1], r[:, 0]) + self.circ_sign * np.pi / 2
+            t_circ = w_circ * _wrap(desired - self.theta)
+        omega = (
+            self.w_r * t_r + self.w_o * t_o + self.w_a * t_a + t_w + self.w_p * t_p + t_circ
+            + self.rng.normal(0, float(cfg["sigma_theta"]), self.n)
+        )
+        omega = np.clip(omega, -float(cfg["omega_max"]), float(cfg["omega_max"]))
+        self.theta = np.mod(self.theta + omega * self.dt, 2 * np.pi)
+        a = np.clip(
+            (self.s_star - self.speed) / max(float(cfg["tau_s"]), 1e-6),
+            -float(cfg["a_max"]),
+            float(cfg["a_max"]),
+        )
+        self.speed = np.clip(self.speed + a * self.dt, float(cfg["s_min"]), float(cfg.get("s_escape", 3.0)) * 1.2)
+        self.pos = self.pos + self.velocities() * self.dt
+        self.frame += 1
+
+    def run(self) -> SimResult:
+        cfg = self.cfg
+        for _ in range(int(cfg["burn_in"])):
+            self.step()
+        T = int(cfg["record_frames"])
+        pos_hist = np.zeros((T, self.n, 2))
+        vel_hist = np.zeros((T, self.n, 2))
+        self.frame = 0
+        for t in range(T):
+            self.step()
+            pos_hist[t] = self.pos
+            vel_hist[t] = self.velocities()
+        return SimResult(
+            positions=pos_hist,
+            velocities=vel_hist,
+            meta={"n": self.n, "behavior": cfg.get("behavior"), "fps": self.fps},
+        )
+
+
+def run_simulation_fast(behavior: str, n: int, seed: int, overrides: dict | None = None) -> SimResult:
+    from src.sim.config import deep_merge, load_behavior_config
+    from src.labels import BEHAVIOR_SHORT
+
+    short = BEHAVIOR_SHORT[behavior]
+    base = load_behavior_config(short)
+    if overrides:
+        base = deep_merge(base, overrides)
+    base["behavior"] = behavior
+    # milling init uses behavior name; fountain/expansion/compaction use polarized-like init
+    if behavior in ("fountain_evasion", "expansion_burst", "compaction"):
+        # keep social params; init as polarized via non-milling/swarming branch
+        pass
+    return FastSchoolSimulator(n=n, cfg=base, seed=seed).run()

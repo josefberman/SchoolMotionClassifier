@@ -1,0 +1,18 @@
+behavior: swarming
+w_r: 2.0
+w_o: 0.05
+w_a: 1.6
+sigma_theta: 0.55
+omega_max: 0.70
+s_cruise: 0.45
+tau_s: 6.0
+a_max: 0.18
+r_repulse: 22.0
+r_orient: 30.0
+r_attract: 150.0
+d0: 34.0
+w_circ: 0.0
+burn_in: 100
+record_frames: 450
+threat:
+  enabled: false

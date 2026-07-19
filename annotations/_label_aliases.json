@@ -1,0 +1,21 @@
+{
+  "polarized": "traveling_polarized",
+  "traveling_polarized": "traveling_polarized",
+  "tpol": "traveling_polarized",
+  "milling": "milling",
+  "m": "milling",
+  "swarming": "swarming",
+  "shoaling": "swarming",
+  "s": "swarming",
+  "fountain": "fountain_evasion",
+  "fountain_evasion": "fountain_evasion",
+  "f": "fountain_evasion",
+  "burst": "expansion_burst",
+  "spread": "expansion_burst",
+  "expansion_burst": "expansion_burst",
+  "expansion": "expansion_burst",
+  "e+": "expansion_burst",
+  "compaction": "compaction",
+  "contraction": "compaction",
+  "e-": "compaction"
+}

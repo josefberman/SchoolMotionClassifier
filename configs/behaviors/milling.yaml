@@ -1,0 +1,24 @@
+behavior: milling
+w_r: 1.4
+w_o: 0.9
+w_a: 2.2
+sigma_theta: 0.08
+omega_max: 0.55
+s_cruise: 0.70
+tau_s: 5.0
+a_max: 0.22
+r_repulse: 18.0
+r_orient: 55.0
+r_attract: 170.0
+d0: 32.0
+w_circ: 1.2
+bidirectional_frac: 0.0
+cross_align_scale: 1.0
+arena:
+  radius: 360.0
+  wall_margin: 55.0
+  w_wall: 3.5
+burn_in: 150
+record_frames: 450
+threat:
+  enabled: false
