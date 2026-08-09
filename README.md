@@ -56,6 +56,23 @@ python scripts/generate_sims.py --n-jobs 8
 python scripts/generate_sims.py --smoke --n-jobs 4
 ```
 
+### Publication figures / video
+
+Clean white-background stills (300 dpi PNG) and optional MP4/GIF. Fish are dark discs with short heading ticks; circular arena outline only.
+
+```bash
+# While generating (stills for seed 0 only + video):
+python scripts/generate_sims.py --smoke --render --video --render-seeds 0 --n-jobs 2
+
+# From existing sim_datasets (manuscript set: one clip per behaviour):
+python scripts/render_sims.py --manuscript --video
+
+# Selected clips:
+python scripts/render_sims.py --n-values 30 --seeds 0 --video
+```
+
+Outputs land in `sim_datasets/.../renders/` or `results/figures/<behavior>/`.
+
 ## Calibrate / inspect signatures
 
 ```bash

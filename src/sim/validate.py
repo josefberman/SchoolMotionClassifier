@@ -9,7 +9,7 @@ from src.features.order_params import compute_order_params_series
 
 def summarize_metrics(positions: np.ndarray, velocities: np.ndarray) -> dict[str, float]:
     series = compute_order_params_series(positions, velocities)
-    t0, t1 = len(series["phi_dir"]) // 4, 3 * len(series["phi_dir"]) // 4
+    t0, t1 = 0, len(series["phi_dir"])
     out = {}
     for k, arr in series.items():
         out[f"{k}_mean"] = float(np.mean(arr[t0:t1]))
@@ -40,28 +40,23 @@ def validate_behavior(
         if positions is None or velocities is None:
             return True
         series = compute_order_params_series(positions, velocities)
-        pre = slice(0, 100)
-        mid = slice(110, 280)
-        d_sig = float(np.max(series["sigma_d"][mid]) - np.mean(series["sigma_d"][pre]))
-        d_phi = float(np.mean(series["phi_dir"][pre]) - np.min(series["phi_dir"][mid]))
-        return d_sig > 1.0 or d_phi > 0.05
+        sig_std = float(np.std(series["sigma_d"]))
+        sig_range = float(np.max(series["sigma_d"]) - np.min(series["sigma_d"]))
+        return sig_std > 0.35 or sig_range > 1.0
     if behavior == "expansion_burst":
         if positions is None or velocities is None:
             return True
         series = compute_order_params_series(positions, velocities)
-        pre = slice(0, 120)
-        event = slice(130, 250)
-        d_sig = float(np.max(series["sigma_d"][event]) - np.mean(series["sigma_d"][pre]))
-        vr_max = float(np.max(series["v_r_bar"][event]))
-        return d_sig > 1.5 or vr_max > 0.08
+        sig_mean = float(np.mean(series["sigma_d"]))
+        vr_mean = float(np.mean(series["v_r_bar"]))
+        return sig_mean > 4.0 or vr_mean > 0.06
     if behavior == "compaction":
         if positions is None or velocities is None:
             return True
         series = compute_order_params_series(positions, velocities)
-        pre = slice(0, 120)
-        event = slice(160, 320)
-        r_pre = float(np.mean(np.linalg.norm(positions[pre] - positions[pre].mean(axis=1, keepdims=True), axis=-1)))
-        r_ev = float(np.mean(np.linalg.norm(positions[event][-40:] - positions[event][-40:].mean(axis=1, keepdims=True), axis=-1)))
-        d_sig = float(np.mean(series["sigma_d"][event][-40:]) - np.mean(series["sigma_d"][pre]))
-        return (r_ev - r_pre) < -2.0 or d_sig < -0.8
+        d_sig = metrics["sigma_d_delta"]
+        w = min(30, max(10, positions.shape[0] // 4))
+        r0 = float(np.mean(np.linalg.norm(positions[:w] - positions[:w].mean(axis=1, keepdims=True), axis=-1)))
+        r1 = float(np.mean(np.linalg.norm(positions[-w:] - positions[-w:].mean(axis=1, keepdims=True), axis=-1)))
+        return d_sig < -0.5 or (r1 - r0) < -2.0
     return True

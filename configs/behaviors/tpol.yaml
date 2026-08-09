@@ -1,20 +1,26 @@
 behavior: traveling_polarized
 w_r: 1.8
-w_o: 3.2
-w_a: 0.55
-sigma_theta: 0.05
+w_o: 4.0
+w_a: 0.0
+sigma_theta: 0.12
+theta_init_std: 0.30
+speed_spread: 0.22
+sigma_speed: 0.06
 omega_max: 0.40
-s_cruise: 0.95
-tau_s: 5.0
-a_max: 0.25
-r_repulse: 14.0
-r_orient: 85.0
-r_attract: 120.0
-d0: 24.0
+s_cruise: 1.75
+tau_s: 3.0
+a_max: 0.40
+r_repulse: 16.0
+r_orient: 120.0
+r_attract: 180.0
+d0: 22.0
 w_circ: 0.0
+lateral_repulse_scale: 1.0
+w_file: 0.0
 arena:
-  w_wall: 1.8
-burn_in: 90
-record_frames: 450
+  half_extent: 400.0
+  w_wall: 2.5
+burn_in: 80
+record_frames: 150
 threat:
   enabled: false
