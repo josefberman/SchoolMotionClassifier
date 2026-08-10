@@ -261,9 +261,12 @@ def save_video(
     out_fps = max(1.0, fps / max(1, stride))
     written = out_path.with_suffix(".mp4")
     saved = False
-    for codec in ("libopenh264", "mpeg4", "libx264", "h264"):
+    import logging
+    logging.getLogger("matplotlib.animation").setLevel(logging.ERROR)
+    for codec in ("mpeg4", "libx264", "h264", "libopenh264"):
         try:
-            writer = FFMpegWriter(fps=out_fps, bitrate=1800, codec=codec)
+            writer = FFMpegWriter(fps=out_fps, bitrate=1800, codec=codec,
+                                  extra_args=["-loglevel", "error"])
             anim.save(str(written), writer=writer, dpi=dpi)
             if written.exists() and written.stat().st_size > 1000:
                 saved = True

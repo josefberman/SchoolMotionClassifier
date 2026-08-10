@@ -38,13 +38,14 @@ def features_from_sim_entry(
     if mode == "windows":
         feats = sliding_window_features(pos, vel, window_sec=window_sec, fps=fps)
     else:
-        # For threat behaviours, focus on event window if provided
         if entry.get("event_start") is not None:
             a = int(entry["event_start"])
             b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
             a = max(0, min(a, pos.shape[0] - 2))
             b = max(a + 2, min(b, pos.shape[0]))
             feats = [segment_feature_vector(pos[a:b], vel[a:b], fps=fps)]
+        elif entry.get("morph_start") is not None:
+            feats = [segment_feature_vector(pos, vel, fps=fps)]
         else:
             feats = [segment_feature_vector(pos, vel, fps=fps)]
     return [(feature_dict_to_array(f), label) for f in feats]

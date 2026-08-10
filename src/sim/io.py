@@ -54,10 +54,10 @@ def load_trajectory_csv(path: Path) -> tuple[np.ndarray, np.ndarray]:
 def mmss_to_frame(mmss: str, fps: float) -> int:
     parts = mmss.strip().split(":")
     if len(parts) == 2:
-        m, s = int(parts[0]), int(parts[1])
+        m, s = int(parts[0]), float(parts[1])
         total = m * 60 + s
     elif len(parts) == 3:
-        h, m, s = int(parts[0]), int(parts[1]), int(parts[2])
+        h, m, s = int(parts[0]), int(parts[1]), float(parts[2])
         total = h * 3600 + m * 60 + s
     else:
         raise ValueError(f"Bad timestamp: {mmss!r}")

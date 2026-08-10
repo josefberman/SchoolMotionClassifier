@@ -434,3 +434,102 @@ def run_simulation_fast(behavior: str, n: int, seed: int, overrides: dict | None
         base = deep_merge(base, overrides)
     base["behavior"] = behavior
     return FastSchoolSimulator(n=n, cfg=base, seed=seed).run()
+
+
+_MORPH_KEYS = (
+    "w_r", "w_o", "w_a", "sigma_theta", "omega_max",
+    "s_cruise", "d0", "w_circ", "cross_align_scale",
+    "r_repulse", "r_orient", "r_attract",
+    "sigma_speed", "speed_spread", "tau_s", "a_max",
+)
+
+
+def run_transition_fast(
+    behavior_from: str,
+    behavior_to: str,
+    n: int,
+    seed: int,
+    *,
+    total_frames: int = 300,
+    morph_start_frac: float = 0.30,
+    morph_end_frac: float = 0.70,
+    burn_in: int = 80,
+) -> SimResult:
+    """Simulate a transition from *behavior_from* to *behavior_to*.
+
+    The clip has three phases:
+      1. Pure behavior_from (frames 0 .. morph_start)
+      2. Linear parameter morph (morph_start .. morph_end)
+      3. Pure behavior_to (morph_end .. total_frames)
+    """
+    from src.sim.config import deep_merge, load_behavior_config
+    from src.labels import BEHAVIOR_SHORT
+
+    cfg_from = load_behavior_config(BEHAVIOR_SHORT[behavior_from])
+    cfg_to = load_behavior_config(BEHAVIOR_SHORT[behavior_to])
+    cfg_from["behavior"] = behavior_from
+    cfg_to["behavior"] = behavior_to
+
+    he = max(float(cfg_from["arena"]["half_extent"]), float(cfg_to["arena"]["half_extent"]))
+    cfg_from["arena"]["half_extent"] = he
+    cfg_from["burn_in"] = burn_in
+    cfg_from["record_frames"] = total_frames
+    cfg_from["threat"]["enabled"] = False
+
+    sim = FastSchoolSimulator(n=n, cfg=cfg_from, seed=seed)
+
+    sim.in_recording = False
+    for _ in range(burn_in):
+        sim.step()
+
+    morph_start = int(total_frames * morph_start_frac)
+    morph_end = int(total_frames * morph_end_frac)
+    morph_len = max(morph_end - morph_start, 1)
+
+    vals_from = {k: float(cfg_from.get(k, 0)) for k in _MORPH_KEYS}
+    vals_to = {k: float(cfg_to.get(k, 0)) for k in _MORPH_KEYS}
+
+    T = total_frames
+    pos_hist = np.zeros((T, n, 2))
+    vel_hist = np.zeros((T, n, 2))
+    sim.frame = 0
+    sim.in_recording = True
+
+    for t in range(T):
+        if t < morph_start:
+            alpha = 0.0
+        elif t >= morph_end:
+            alpha = 1.0
+        else:
+            alpha = (t - morph_start) / morph_len
+
+        for k in _MORPH_KEYS:
+            v = vals_from[k] * (1.0 - alpha) + vals_to[k] * alpha
+            sim.cfg[k] = v
+
+        sim.w_r[:] = float(sim.cfg["w_r"])
+        sim.w_o[:] = float(sim.cfg["w_o"])
+        sim.w_a[:] = float(sim.cfg["w_a"])
+        sim.d0[:] = float(sim.cfg["d0"])
+        sim.d0_base = float(sim.cfg["d0"])
+        sim.s_star[:] = float(sim.cfg["s_cruise"])
+
+        sim.step()
+        pos_hist[t] = sim.pos
+        vel_hist[t] = sim.velocities()
+
+    sim.in_recording = False
+    label = f"{behavior_from}_to_{behavior_to}"
+    return SimResult(
+        positions=pos_hist,
+        velocities=vel_hist,
+        meta={
+            "n": n,
+            "behavior": label,
+            "behavior_from": behavior_from,
+            "behavior_to": behavior_to,
+            "fps": sim.fps,
+            "morph_start": morph_start,
+            "morph_end": morph_end,
+        },
+    )
