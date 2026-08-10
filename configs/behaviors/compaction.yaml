@@ -1,11 +1,11 @@
 behavior: compaction
 w_r: 1.4
 w_o: 0.8
-w_a: 1.5
-sigma_theta: 0.18
+w_a: 1.369734
+sigma_theta: 0.168698
 theta_init_std: 0.25
-speed_spread: 0.18
-sigma_speed: 0.05
+speed_spread: 0.238904
+sigma_speed: 0.057766
 omega_max: 0.45
 s_cruise: 1.15
 tau_s: 3.0
@@ -21,7 +21,7 @@ threat:
   mode: compact
   full_clip: true
   predator_speed: 7.0
-  predator_radius: 220.0
-  compact_delta_d0: 28.0
-  compact_tau: 8.0
+  predator_radius: 206
+  compact_delta_d0: 27
+  compact_tau: 7
   w_p: 0.3

@@ -20,12 +20,21 @@ ROOT = Path(__file__).resolve().parents[2]
 def train_classifier(
     out_dir: Path | None = None,
     mode: str = "segment",
+    manifest_path: Path | None = None,
+    sim_root: Path | None = None,
 ) -> dict:
     out_dir = out_dir or (ROOT / "results")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    X_train, y_train, feat_names = build_sim_xy(split="train", mode=mode)
-    X_test, y_test, _ = build_sim_xy(split="test", mode=mode)
+    manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
+    sim_root = sim_root or manifest_path.parent
+
+    X_train, y_train, feat_names = build_sim_xy(
+        split="train", manifest_path=manifest_path, sim_root=sim_root, mode=mode
+    )
+    X_test, y_test, _ = build_sim_xy(
+        split="test", manifest_path=manifest_path, sim_root=sim_root, mode=mode
+    )
     if len(X_train) == 0:
         raise RuntimeError("No training samples — run generate_sims.py first")
 

@@ -18,25 +18,25 @@
     "v_r_bar_slope",
     "l_bar_abs_mean"
   ],
-  "sim_test_accuracy": 0.995,
-  "sim_test_macro_f1": 0.9950082449978893,
+  "sim_test_accuracy": 0.9916666666666667,
+  "sim_test_macro_f1": 0.9916620227554155,
   "classification_report": {
     "traveling_polarized": {
-      "precision": 0.995,
+      "precision": 0.9900497512437811,
       "recall": 0.995,
-      "f1-score": 0.995,
+      "f1-score": 0.9925187032418953,
       "support": 200.0
     },
     "milling": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
+      "precision": 0.9949748743718593,
+      "recall": 0.99,
+      "f1-score": 0.9924812030075187,
       "support": 200.0
     },
     "swarming": {
       "precision": 1.0,
-      "recall": 0.99,
-      "f1-score": 0.9949748743718593,
+      "recall": 0.975,
+      "f1-score": 0.9873417721518988,
       "support": 200.0
     },
     "fountain_evasion": {
@@ -46,28 +46,28 @@
       "support": 200.0
     },
     "expansion_burst": {
-      "precision": 0.9950248756218906,
+      "precision": 1.0,
       "recall": 1.0,
-      "f1-score": 0.9975062344139651,
+      "f1-score": 1.0,
       "support": 200.0
     },
     "compaction": {
-      "precision": 1.0,
-      "recall": 0.995,
-      "f1-score": 0.9974937343358395,
+      "precision": 0.9852216748768473,
+      "recall": 1.0,
+      "f1-score": 0.9925558312655087,
       "support": 200.0
     },
-    "accuracy": 0.995,
+    "accuracy": 0.9916666666666667,
     "macro avg": {
-      "precision": 0.9950371492373118,
-      "recall": 0.9950000000000001,
-      "f1-score": 0.9950082449978893,
+      "precision": 0.9917407200490779,
+      "recall": 0.9916666666666667,
+      "f1-score": 0.9916620227554155,
       "support": 1200.0
     },
     "weighted avg": {
-      "precision": 0.9950371492373119,
-      "recall": 0.995,
-      "f1-score": 0.9950082449978892,
+      "precision": 0.9917407200490781,
+      "recall": 0.9916666666666667,
+      "f1-score": 0.9916620227554156,
       "support": 1200.0
     }
   },
@@ -82,26 +82,26 @@
     ],
     [
       0,
-      200,
-      0,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      0,
       198,
+      0,
       2,
       0,
       0
     ],
     [
+      0,
       1,
+      195,
+      1,
+      0,
+      3
+    ],
+    [
+      2,
       0,
       0,
       198,
-      1,
+      0,
       0
     ],
     [
@@ -116,9 +116,9 @@
       0,
       0,
       0,
-      1,
       0,
-      199
+      0,
+      200
     ]
   ],
   "confusion_labels": [

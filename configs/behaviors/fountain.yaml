@@ -1,15 +1,15 @@
 behavior: fountain_evasion
 w_r: 1.6
-w_o: 2.6
-w_a: 1.0
-sigma_theta: 0.12
+w_o: 2.00493
+w_a: 1.160246
+sigma_theta: 0.083759
 theta_init_std: 0.28
-speed_spread: 0.20
-sigma_speed: 0.06
+speed_spread: 0.166334
+sigma_speed: 0.076299
 omega_max: 0.55
 s_cruise: 1.65
 tau_s: 3.0
-a_max: 0.40
+a_max: 0.4
 r_repulse: 14.0
 r_orient: 70.0
 r_attract: 150.0
@@ -21,6 +21,6 @@ threat:
   mode: fountain
   full_clip: true
   predator_speed: 7.0
-  predator_radius: 180.0
-  flee_angle_deg: 40.0
-  w_p: 8.0
+  predator_radius: 146
+  flee_angle_deg: 30.290567
+  w_p: 8.3039

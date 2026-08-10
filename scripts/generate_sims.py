@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.labels import BEHAVIOR_SHORT, CANONICAL
+from src.sim.config import deep_merge
 from src.sim.io import save_motion_json, save_trajectory_csv
 from src.sim.model_fast import run_simulation_fast
 from src.sim.render import render_simulation
@@ -58,6 +59,7 @@ def generate_one(
     test_seed_start: int,
     render: bool = False,
     video: bool = False,
+    behavior_overrides: dict[str, dict] | None = None,
 ) -> dict:
     split = "test" if seed >= test_seed_start else "train"
 
@@ -65,6 +67,8 @@ def generate_one(
     for attempt in range(max_retries):
         use_seed = seed + attempt * 10007
         ov = _overrides_for(behavior, seed)
+        if behavior_overrides and behavior in behavior_overrides:
+            ov = deep_merge(ov, behavior_overrides[behavior])
         try:
             result = run_simulation_fast(behavior, n, use_seed, overrides=ov)
         except Exception as e:
@@ -154,6 +158,48 @@ def _frame_to_mmss(frame: int, fps: float) -> str:
     return f"{m:02d}:{s:02d}"
 
 
+def generate_batch(
+    out_root: Path,
+    *,
+    behaviors: list[str] | None = None,
+    n_values: list[int] | None = None,
+    n_seeds: int = N_SEEDS,
+    n_jobs: int = -1,
+    behavior_overrides: dict[str, dict] | None = None,
+    render: bool = False,
+    video: bool = False,
+    render_seeds: set[int] | None = None,
+    show_progress: bool = True,
+) -> list[dict]:
+    """Generate simulations and write manifest.json under out_root."""
+    behaviors = behaviors or list(CANONICAL)
+    n_values = n_values or list(N_VALUES)
+    test_seed_start = _test_seed_start(n_seeds)
+    jobs = [(b, n, s) for b in behaviors for n in n_values for s in range(n_seeds)]
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    iterator = tqdm(jobs, desc="sims") if show_progress else jobs
+    results = Parallel(n_jobs=n_jobs, verbose=0)(
+        delayed(generate_one)(
+            b,
+            n,
+            s,
+            out_root,
+            test_seed_start=test_seed_start,
+            render=render and (render_seeds is None or s in render_seeds),
+            video=video and (render_seeds is None or s in render_seeds),
+            behavior_overrides=behavior_overrides,
+        )
+        for b, n, s in iterator
+    )
+
+    manifest_path = out_root / "manifest.json"
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+        f.write("\n")
+    return results
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, default=ROOT / "sim_datasets")
@@ -196,24 +242,18 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
 
     print(f"Generating {len(jobs)} simulations → {args.out}  (test seeds >= {test_seed_start})")
-    results = Parallel(n_jobs=args.n_jobs, verbose=0)(
-        delayed(generate_one)(
-            b,
-            n,
-            s,
-            args.out,
-            test_seed_start=test_seed_start,
-            render=do_render and (render_seeds is None or s in render_seeds),
-            video=do_video and (render_seeds is None or s in render_seeds),
-        )
-        for b, n, s in tqdm(jobs, desc="sims")
+    results = generate_batch(
+        args.out,
+        behaviors=behaviors,
+        n_values=n_values,
+        n_seeds=n_seeds,
+        n_jobs=args.n_jobs,
+        render=do_render,
+        video=do_video,
+        render_seeds=render_seeds,
     )
 
     manifest_path = args.out / "manifest.json"
-    with open(manifest_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
-        f.write("\n")
-
     n_ok = sum(1 for r in results if r.get("valid"))
     print(f"Done. valid={n_ok}/{len(results)}  manifest={manifest_path}")
 

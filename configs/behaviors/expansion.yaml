@@ -2,13 +2,13 @@ behavior: expansion_burst
 w_r: 1.6
 w_o: 1.6
 w_a: 0.7
-sigma_theta: 0.14
+sigma_theta: 0.114474
 theta_init_std: 0.28
-speed_spread: 0.24
-sigma_speed: 0.07
-omega_max: 0.60
+speed_spread: 0.253432
+sigma_speed: 0.0619
+omega_max: 0.6
 s_cruise: 1.55
-s_escape: 4.0
+s_escape: 4.545477
 tau_s: 2.5
 a_max: 0.55
 r_repulse: 14.0
@@ -22,10 +22,10 @@ threat:
   mode: startle
   full_clip: true
   predator_speed: 7.0
-  predator_radius: 160.0
+  predator_radius: 178
   flee_angle_deg: 45.0
-  w_p: 5.0
+  w_p: 5.32963
   z_thr: 0.25
-  beta_p: 2.5
-  beta_n: 1.8
+  beta_p: 1.868379
+  beta_n: 1.688185
   tau_z: 4.0

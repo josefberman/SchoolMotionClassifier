@@ -53,12 +53,15 @@ def features_from_sim_entry(
 def build_sim_xy(
     split: str = "train",
     manifest_path: Path | None = None,
+    sim_root: Path | None = None,
     mode: str = "segment",
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
+    sim_root = sim_root or manifest_path.parent
     entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
     xs, ys = [], []
     for e in entries:
-        for x, y in features_from_sim_entry(e, mode=mode):
+        for x, y in features_from_sim_entry(e, mode=mode, sim_root=sim_root):
             xs.append(x)
             ys.append(y)
     if not xs:
