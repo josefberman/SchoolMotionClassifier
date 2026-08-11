@@ -29,6 +29,19 @@ TRANSITIONS = tuple(
 
 ALL_LABELS = CANONICAL + TRANSITIONS
 
+
+def is_transition(label: str) -> bool:
+    return "_to_" in label
+
+
+def is_baseline(label: str) -> bool:
+    return label in CANONICAL
+
+
+def label_set(*, include_transitions: bool) -> tuple[str, ...]:
+    return ALL_LABELS if include_transitions else CANONICAL
+
+
 _ROOT = Path(__file__).resolve().parents[1]
 _ALIAS_PATH = _ROOT / "annotations" / "_label_aliases.json"
 

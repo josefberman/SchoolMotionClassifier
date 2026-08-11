@@ -10,26 +10,54 @@ import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 
 from src.features.dataset import build_real_xy
-from src.labels import ALL_LABELS, CANONICAL
+from src.labels import is_transition
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def eval_real(model_path: Path | None = None, out_dir: Path | None = None) -> dict:
+def _count_by_kind(labels: np.ndarray) -> dict[str, int]:
+    base = int(sum(not is_transition(y) for y in labels))
+    trans = int(sum(is_transition(y) for y in labels))
+    return {"baseline": base, "transition": trans, "total": int(len(labels))}
+
+
+def eval_real(
+    model_path: Path | None = None,
+    out_dir: Path | None = None,
+    include_transitions: bool | None = None,
+) -> dict:
     out_dir = out_dir or (ROOT / "results")
     model_path = model_path or (out_dir / "classifier.joblib")
     bundle = joblib.load(model_path)
     model = bundle["model"]
     le = bundle["label_encoder"]
 
-    X, y, _, meta = build_real_xy()
+    if include_transitions is None:
+        include_transitions = any(is_transition(str(c)) for c in le.classes_)
+
+    X_all, y_all, _, _meta_all = build_real_xy(include_transitions=True)
     known = set(le.classes_)
-    mask = np.array([yi in known for yi in y])
-    X, y = X[mask], y[mask]
+    known_mask = np.array([yi in known for yi in y_all])
+    if not include_transitions:
+        kind_mask = np.array([not is_transition(yi) for yi in y_all])
+        use_mask = known_mask & kind_mask
+    else:
+        use_mask = known_mask
+
+    X, y = X_all[use_mask], y_all[use_mask]
+
     present_labels = sorted(set(y))
-    report: dict = {"n_real": int(len(y)), "label_counts": {}}
-    for lab in present_labels:
-        report["label_counts"][lab] = int(np.sum(y == lab))
+    report: dict = {
+        "n_real": int(len(y)),
+        "include_transitions": include_transitions,
+        "n_classes_in_model": int(len(le.classes_)),
+        "label_counts": {lab: int(np.sum(y == lab)) for lab in present_labels},
+        "segment_counts": _count_by_kind(y),
+        "n_skipped_unknown_label": int(np.sum(~known_mask)),
+        "n_skipped_transitions": int(np.sum(known_mask & np.array([is_transition(yi) for yi in y_all])))
+        if not include_transitions
+        else 0,
+    }
 
     if len(X) == 0:
         report["error"] = "no real segments"
@@ -45,7 +73,33 @@ def eval_real(model_path: Path | None = None, out_dir: Path | None = None) -> di
     )
     report["confusion_matrix"] = confusion_matrix(y, pred, labels=present_labels).tolist()
     report["confusion_labels"] = present_labels
-    report["note"] = "compaction excluded from real eval if no annotations"
+
+    base_mask = np.array([not is_transition(yi) for yi in y])
+    trans_mask = np.array([is_transition(yi) for yi in y])
+    if base_mask.any():
+        base_labels = sorted({yi for yi in y[base_mask]})
+        report["baseline_accuracy"] = float(np.mean(pred[base_mask] == y[base_mask]))
+        report["baseline_macro_f1"] = float(
+            f1_score(
+                y[base_mask],
+                pred[base_mask],
+                average="macro",
+                labels=base_labels,
+                zero_division=0,
+            )
+        )
+    if trans_mask.any():
+        trans_labels = sorted({yi for yi in y[trans_mask]})
+        report["transition_accuracy"] = float(np.mean(pred[trans_mask] == y[trans_mask]))
+        report["transition_macro_f1"] = float(
+            f1_score(
+                y[trans_mask],
+                pred[trans_mask],
+                average="macro",
+                labels=trans_labels,
+                zero_division=0,
+            )
+        )
 
     with open(out_dir / "real_eval_metrics.json", "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)

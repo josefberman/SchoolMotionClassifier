@@ -1,88 +1,215 @@
 {
-  "n_real": 276,
+  "n_real": 406,
+  "include_transitions": true,
+  "n_classes_in_model": 36,
   "label_counts": {
-    "expansion_burst": 1,
-    "milling": 37,
-    "swarming": 34,
-    "traveling_polarized": 204
+    "milling": 41,
+    "milling_to_swarming": 2,
+    "milling_to_traveling_polarized": 34,
+    "swarming": 29,
+    "swarming_to_milling": 2,
+    "swarming_to_traveling_polarized": 26,
+    "traveling_polarized": 209,
+    "traveling_polarized_to_milling": 36,
+    "traveling_polarized_to_swarming": 27
   },
-  "accuracy": 0.5144927536231884,
-  "macro_f1": 0.5459385610434202,
+  "segment_counts": {
+    "baseline": 279,
+    "transition": 127,
+    "total": 406
+  },
+  "n_skipped_unknown_label": 0,
+  "n_skipped_transitions": 0,
+  "accuracy": 0.022167487684729065,
+  "macro_f1": 0.027669781865608027,
   "classification_report": {
-    "expansion_burst": {
-      "precision": 0.023255813953488372,
-      "recall": 1.0,
-      "f1-score": 0.045454545454545456,
-      "support": 1.0
-    },
     "milling": {
-      "precision": 0.8205128205128205,
-      "recall": 0.8648648648648649,
-      "f1-score": 0.8421052631578947,
-      "support": 37.0
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 41.0
+    },
+    "milling_to_swarming": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "milling_to_traveling_polarized": {
+      "precision": 0.12,
+      "recall": 0.08823529411764706,
+      "f1-score": 0.1016949152542373,
+      "support": 34.0
     },
     "swarming": {
-      "precision": 0.9473684210526315,
-      "recall": 0.5294117647058824,
-      "f1-score": 0.6792452830188679,
-      "support": 34.0
+      "precision": 0.16666666666666666,
+      "recall": 0.034482758620689655,
+      "f1-score": 0.05714285714285714,
+      "support": 29.0
+    },
+    "swarming_to_milling": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "swarming_to_traveling_polarized": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 26.0
     },
     "traveling_polarized": {
       "precision": 1.0,
-      "recall": 0.44607843137254904,
-      "f1-score": 0.6169491525423729,
-      "support": 204.0
+      "recall": 0.019138755980861243,
+      "f1-score": 0.03755868544600939,
+      "support": 209.0
+    },
+    "traveling_polarized_to_milling": {
+      "precision": 0.5,
+      "recall": 0.027777777777777776,
+      "f1-score": 0.05263157894736842,
+      "support": 36.0
+    },
+    "traveling_polarized_to_swarming": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 27.0
     },
     "micro avg": {
-      "precision": 0.7395833333333334,
-      "recall": 0.5144927536231884,
-      "f1-score": 0.6068376068376068,
-      "support": 276.0
+      "precision": 0.18,
+      "recall": 0.022167487684729065,
+      "f1-score": 0.039473684210526314,
+      "support": 406.0
     },
     "macro avg": {
-      "precision": 0.6977842638797351,
-      "recall": 0.7100887652358241,
-      "f1-score": 0.5459385610434202,
-      "support": 276.0
+      "precision": 0.1985185185185185,
+      "recall": 0.018848287388552862,
+      "f1-score": 0.027669781865608027,
+      "support": 406.0
     },
     "weighted avg": {
-      "precision": 0.9659157843794106,
-      "recall": 0.5144927536231884,
-      "f1-score": 0.652736652259356,
-      "support": 276.0
+      "precision": 0.5810673234811166,
+      "recall": 0.022167487684729065,
+      "f1-score": 0.036599192305685105,
+      "support": 406.0
     }
   },
   "confusion_matrix": [
     [
+      0,
+      2,
+      12,
+      0,
       1,
       0,
       0,
-      0
-    ],
-    [
-      2,
-      32,
       0,
       0
     ],
     [
-      2,
-      4,
-      18,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
       0
     ],
     [
-      38,
+      0,
+      1,
       3,
       1,
-      91
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      2,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      4,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      4,
+      1,
+      2,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0
     ]
   ],
   "confusion_labels": [
-    "expansion_burst",
     "milling",
+    "milling_to_swarming",
+    "milling_to_traveling_polarized",
     "swarming",
-    "traveling_polarized"
+    "swarming_to_milling",
+    "swarming_to_traveling_polarized",
+    "traveling_polarized",
+    "traveling_polarized_to_milling",
+    "traveling_polarized_to_swarming"
   ],
-  "note": "compaction excluded from real eval if no annotations"
+  "baseline_accuracy": 0.017921146953405017,
+  "baseline_macro_f1": 0.03474178403755868,
+  "transition_accuracy": 0.031496062992125984,
+  "transition_macro_f1": 0.03123123123123123
 }

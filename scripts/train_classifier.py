@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -12,10 +13,59 @@ from src.classify.train import train_classifier
 
 
 def main() -> None:
-    report = train_classifier()
-    print(json.dumps({k: report[k] for k in report if k != "classification_report"}, indent=2))
+    parser = argparse.ArgumentParser(description="Train classifier on simulated features.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--transitions",
+        action="store_true",
+        default=None,
+        help="Include X_to_Y transition clips from the sim manifest (default: auto-detect)",
+    )
+    group.add_argument(
+        "--no-transitions",
+        action="store_false",
+        dest="transitions",
+        help="Train on six baseline behaviours only",
+    )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=ROOT / "sim_datasets" / "manifest.json",
+        help="Path to sim manifest.json",
+    )
+    parser.add_argument(
+        "--sim-root",
+        type=Path,
+        default=None,
+        help="Sim dataset root (default: parent of manifest)",
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=ROOT / "results",
+        help="Directory for classifier.joblib and sim_test_metrics.json",
+    )
+    args = parser.parse_args()
+
+    sim_root = args.sim_root or args.manifest.parent
+    report = train_classifier(
+        out_dir=args.out_dir,
+        manifest_path=args.manifest,
+        sim_root=sim_root,
+        include_transitions=args.transitions,
+    )
+    summary = {k: report[k] for k in report if k != "classification_report"}
+    print(json.dumps(summary, indent=2))
     if "sim_test_accuracy" in report:
-        print(f"sim_test_accuracy={report['sim_test_accuracy']:.3f} macro_f1={report['sim_test_macro_f1']:.3f}")
+        print(
+            f"sim_test_accuracy={report['sim_test_accuracy']:.3f} "
+            f"macro_f1={report['sim_test_macro_f1']:.3f}"
+        )
+        if report.get("include_transitions"):
+            if "sim_test_baseline_macro_f1" in report:
+                print(f"sim_baseline_macro_f1={report['sim_test_baseline_macro_f1']:.3f}")
+            if "sim_test_transition_macro_f1" in report:
+                print(f"sim_transition_macro_f1={report['sim_test_transition_macro_f1']:.3f}")
 
 
 if __name__ == "__main__":

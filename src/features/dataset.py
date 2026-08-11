@@ -9,7 +9,7 @@ import numpy as np
 
 from src.features.order_params import AGG_FEATURE_NAMES
 from src.features.windows import feature_dict_to_array, segment_feature_vector, sliding_window_features
-from src.labels import canonicalize, load_aliases
+from src.labels import canonicalize, is_transition, load_aliases
 from src.sim.io import load_motion_json, load_trajectory_csv, mmss_to_frame
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -51,15 +51,22 @@ def features_from_sim_entry(
     return [(feature_dict_to_array(f), label) for f in feats]
 
 
+def manifest_has_transitions(manifest_path: Path | None = None) -> bool:
+    return any("_to_" in e.get("behavior", "") for e in load_manifest(manifest_path))
+
+
 def build_sim_xy(
     split: str = "train",
     manifest_path: Path | None = None,
     sim_root: Path | None = None,
     mode: str = "segment",
+    include_transitions: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
     sim_root = sim_root or manifest_path.parent
     entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
+    if not include_transitions:
+        entries = [e for e in entries if not is_transition(e.get("behavior", ""))]
     xs, ys = [], []
     for e in entries:
         for x, y in features_from_sim_entry(e, mode=mode, sim_root=sim_root):
@@ -116,8 +123,11 @@ def load_real_segments(
 
 def build_real_xy(
     min_frames: int = 15,
+    include_transitions: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, list[str], list[dict]]:
     segs = load_real_segments()
+    if not include_transitions:
+        segs = [s for s in segs if not is_transition(s["label"])]
     xs, ys, kept = [], [], []
     for s in segs:
         pos, vel = load_trajectory_csv(ROOT / s["csv"])
