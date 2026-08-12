@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate sims × 5 behaviours × group sizes with train/test split."""
+"""Generate sims × 3 behaviours × group sizes with train/test split."""
 
 from __future__ import annotations
 
@@ -89,8 +89,6 @@ def generate_one(
                 "traveling_polarized": "polarized",
                 "milling": "milling",
                 "swarming": "swarming",
-                "expansion_burst": "burst",
-                "compaction": "compaction",
             }[behavior]
             es, ee = _event_window(behavior)
             if es is not None:

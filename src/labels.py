@@ -5,21 +5,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-# Stable regimes plus radial threat responses (no fountain evasion).
+# Three stable schooling regimes (Tunström-style macroscopic states).
 CANONICAL = (
     "traveling_polarized",
     "milling",
     "swarming",
-    "expansion_burst",
-    "compaction",
 )
 
 BEHAVIOR_SHORT = {
     "traveling_polarized": "tpol",
     "milling": "milling",
     "swarming": "swarming",
-    "expansion_burst": "expansion",
-    "compaction": "compaction",
 }
 
 TRANSITIONS = tuple(
@@ -56,10 +52,6 @@ _SHORT_TO_CANONICAL = {v: k for k, v in BEHAVIOR_SHORT.items()}
 _SHORT_TO_CANONICAL.update({
     "polarized": "traveling_polarized",
     "shoaling": "swarming",
-    "burst": "expansion_burst",
-    "spread": "expansion_burst",
-    "expansion": "expansion_burst",
-    "contraction": "compaction",
 })
 
 

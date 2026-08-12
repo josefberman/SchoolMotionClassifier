@@ -3,54 +3,235 @@
   "fps": 29.97,
   "source": "manual video review — partial coverage",
   "segments": [
-    {"start": "00:07", "end": "00:29", "label": "polarized"},
-    {"start": "00:33", "end": "00:50", "label": "polarized"},
-    {"start": "00:50", "end": "00:53", "label": "tpol_to_m"},
-    {"start": "00:53", "end": "01:00", "label": "milling"},
-    {"start": "01:00", "end": "01:06", "label": "m_to_tpol"},
-    {"start": "01:06", "end": "01:27", "label": "polarized"},
-    {"start": "01:31", "end": "01:53", "label": "polarized"},
-    {"start": "02:04", "end": "02:17.5", "label": "milling"},
-    {"start": "02:17.5", "end": "02:24", "label": "m_to_tpol"},
-    {"start": "02:34", "end": "02:38", "label": "polarized"},
-    {"start": "02:44", "end": "02:45.5", "label": "e-"},
-    {"start": "02:46", "end": "03:03", "label": "polarized"},
-    {"start": "03:14", "end": "03:41", "label": "polarized"},
-    {"start": "03:47", "end": "03:58", "label": "polarized"},
-    {"start": "04:01", "end": "04:26", "label": "polarized"},
-    {"start": "04:29", "end": "04:32", "label": "polarized"},
-    {"start": "04:35", "end": "04:42", "label": "polarized"},
-    {"start": "04:48", "end": "05:10", "label": "polarized"},
-    {"start": "05:10", "end": "05:12", "label": "tpol_to_m"},
-    {"start": "05:12", "end": "05:15.5", "label": "milling"},
-    {"start": "05:15.5", "end": "05:20", "label": "m_to_tpol"},
-    {"start": "05:20", "end": "05:35", "label": "polarized"},
-    {"start": "05:35", "end": "05:37", "label": "tpol_to_m"},
-    {"start": "05:37", "end": "05:41", "label": "milling"},
-    {"start": "05:41", "end": "05:44", "label": "m_to_tpol"},
-    {"start": "05:44", "end": "06:13", "label": "polarized"},
-    {"start": "06:17", "end": "06:40", "label": "polarized"},
-    {"start": "06:56", "end": "06:59", "label": "e+"},
-    {"start": "06:59", "end": "07:01.5", "label": "polarized"},
-    {"start": "07:01.5", "end": "07:04", "label": "e-"},
-    {"start": "07:04", "end": "07:09", "label": "polarized"},
-    {"start": "07:13", "end": "07:17", "label": "polarized"},
-    {"start": "07:21", "end": "07:58", "label": "polarized"},
-    {"start": "08:01", "end": "08:24", "label": "polarized"},
-    {"start": "08:34", "end": "08:57", "label": "polarized"},
-    {"start": "09:01", "end": "09:10", "label": "polarized"},
-    {"start": "09:18", "end": "09:30", "label": "polarized"},
-    {"start": "09:46", "end": "09:53", "label": "polarized"},
-    {"start": "09:58", "end": "10:13", "label": "polarized"},
-    {"start": "10:21", "end": "10:31", "label": "polarized"},
-    {"start": "10:36", "end": "10:50", "label": "polarized"},
-    {"start": "11:02", "end": "11:19", "label": "polarized"},
-    {"start": "11:28", "end": "11:56", "label": "polarized"},
-    {"start": "12:10", "end": "12:30", "label": "polarized"},
-    {"start": "12:30", "end": "12:33", "label": "tpol_to_s"},
-    {"start": "12:33", "end": "12:39", "label": "swarming"},
-    {"start": "12:39", "end": "12:44", "label": "s_to_tpol"},
-    {"start": "12:44", "end": "13:07", "label": "polarized"},
-    {"start": "13:15", "end": "13:39", "label": "polarized"}
+    {
+      "start": "00:07",
+      "end": "00:29",
+      "label": "polarized"
+    },
+    {
+      "start": "00:33",
+      "end": "00:50",
+      "label": "polarized"
+    },
+    {
+      "start": "00:50",
+      "end": "00:53",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "00:53",
+      "end": "01:00",
+      "label": "milling"
+    },
+    {
+      "start": "01:00",
+      "end": "01:06",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "01:06",
+      "end": "01:27",
+      "label": "polarized"
+    },
+    {
+      "start": "01:31",
+      "end": "01:53",
+      "label": "polarized"
+    },
+    {
+      "start": "02:04",
+      "end": "02:17.5",
+      "label": "milling"
+    },
+    {
+      "start": "02:17.5",
+      "end": "02:24",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "02:34",
+      "end": "02:38",
+      "label": "polarized"
+    },
+    {
+      "start": "02:46",
+      "end": "03:03",
+      "label": "polarized"
+    },
+    {
+      "start": "03:14",
+      "end": "03:41",
+      "label": "polarized"
+    },
+    {
+      "start": "03:47",
+      "end": "03:58",
+      "label": "polarized"
+    },
+    {
+      "start": "04:01",
+      "end": "04:26",
+      "label": "polarized"
+    },
+    {
+      "start": "04:29",
+      "end": "04:32",
+      "label": "polarized"
+    },
+    {
+      "start": "04:35",
+      "end": "04:42",
+      "label": "polarized"
+    },
+    {
+      "start": "04:48",
+      "end": "05:10",
+      "label": "polarized"
+    },
+    {
+      "start": "05:10",
+      "end": "05:12",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "05:12",
+      "end": "05:15.5",
+      "label": "milling"
+    },
+    {
+      "start": "05:15.5",
+      "end": "05:20",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "05:20",
+      "end": "05:35",
+      "label": "polarized"
+    },
+    {
+      "start": "05:35",
+      "end": "05:37",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "05:37",
+      "end": "05:41",
+      "label": "milling"
+    },
+    {
+      "start": "05:41",
+      "end": "05:44",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "05:44",
+      "end": "06:13",
+      "label": "polarized"
+    },
+    {
+      "start": "06:17",
+      "end": "06:40",
+      "label": "polarized"
+    },
+    {
+      "start": "06:59",
+      "end": "07:01.5",
+      "label": "polarized"
+    },
+    {
+      "start": "07:04",
+      "end": "07:09",
+      "label": "polarized"
+    },
+    {
+      "start": "07:13",
+      "end": "07:17",
+      "label": "polarized"
+    },
+    {
+      "start": "07:21",
+      "end": "07:58",
+      "label": "polarized"
+    },
+    {
+      "start": "08:01",
+      "end": "08:24",
+      "label": "polarized"
+    },
+    {
+      "start": "08:34",
+      "end": "08:57",
+      "label": "polarized"
+    },
+    {
+      "start": "09:01",
+      "end": "09:10",
+      "label": "polarized"
+    },
+    {
+      "start": "09:18",
+      "end": "09:30",
+      "label": "polarized"
+    },
+    {
+      "start": "09:46",
+      "end": "09:53",
+      "label": "polarized"
+    },
+    {
+      "start": "09:58",
+      "end": "10:13",
+      "label": "polarized"
+    },
+    {
+      "start": "10:21",
+      "end": "10:31",
+      "label": "polarized"
+    },
+    {
+      "start": "10:36",
+      "end": "10:50",
+      "label": "polarized"
+    },
+    {
+      "start": "11:02",
+      "end": "11:19",
+      "label": "polarized"
+    },
+    {
+      "start": "11:28",
+      "end": "11:56",
+      "label": "polarized"
+    },
+    {
+      "start": "12:10",
+      "end": "12:30",
+      "label": "polarized"
+    },
+    {
+      "start": "12:30",
+      "end": "12:33",
+      "label": "tpol_to_s"
+    },
+    {
+      "start": "12:33",
+      "end": "12:39",
+      "label": "swarming"
+    },
+    {
+      "start": "12:39",
+      "end": "12:44",
+      "label": "s_to_tpol"
+    },
+    {
+      "start": "12:44",
+      "end": "13:07",
+      "label": "polarized"
+    },
+    {
+      "start": "13:15",
+      "end": "13:39",
+      "label": "polarized"
+    }
   ]
 }
