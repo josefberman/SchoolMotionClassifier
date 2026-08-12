@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate sims × 6 behaviours × 6 group sizes with train/test split."""
+"""Generate sims × 5 behaviours × group sizes with train/test split."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from tqdm import tqdm
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.labels import BEHAVIOR_SHORT, CANONICAL, TRANSITIONS
+from src.labels import BEHAVIOR_SHORT, CANONICAL
 from src.sim.config import deep_merge
 from src.sim.io import save_motion_json, save_trajectory_csv
 from src.sim.model_fast import run_simulation_fast, run_transition_fast
@@ -89,7 +89,6 @@ def generate_one(
                 "traveling_polarized": "polarized",
                 "milling": "milling",
                 "swarming": "swarming",
-                "fountain_evasion": "fountain",
                 "expansion_burst": "burst",
                 "compaction": "compaction",
             }[behavior]

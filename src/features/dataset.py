@@ -9,7 +9,7 @@ import numpy as np
 
 from src.features.order_params import AGG_FEATURE_NAMES
 from src.features.windows import feature_dict_to_array, segment_feature_vector, sliding_window_features
-from src.labels import canonicalize, is_transition, load_aliases
+from src.labels import canonicalize, is_transition, label_set, load_aliases
 from src.sim.io import load_motion_json, load_trajectory_csv, mmss_to_frame
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -21,13 +21,30 @@ def load_manifest(path: Path | None = None) -> list[dict]:
         return json.load(f)
 
 
+def _clip_frame_range(a: int, b: int, n_frames: int, *, min_len: int = 2) -> tuple[int, int]:
+    a = max(0, min(a, n_frames - min_len))
+    b = max(a + min_len, min(b, n_frames))
+    return a, b
+
+
+def _transition_morph_range(entry: dict, n_frames: int) -> tuple[int, int]:
+    """Frame slice [start, end) for the parameter-morph phase of a transition clip."""
+    morph_start = int(entry["morph_start"])
+    morph_end = int(entry.get("morph_end", n_frames))
+    return _clip_frame_range(morph_start, morph_end, n_frames)
+
+
 def features_from_sim_entry(
     entry: dict,
     mode: str = "segment",
     window_sec: float = 2.0,
     sim_root: Path | None = None,
 ) -> list[tuple[np.ndarray, str]]:
-    """Return list of (x, label)."""
+    """Return list of (x, label).
+
+    Baseline clips use the full recording. Transition clips use only the morph
+    window (morph_start .. morph_end) so features match real transition segments.
+    """
     sim_root = sim_root or (ROOT / "sim_datasets")
     csv_path = Path(entry["csv"])
     if not csv_path.is_absolute():
@@ -35,19 +52,20 @@ def features_from_sim_entry(
     pos, vel = load_trajectory_csv(csv_path)
     fps = float(entry.get("fps", 30.0))
     label = entry["behavior"]
+
+    if entry.get("morph_start") is not None:
+        a, b = _transition_morph_range(entry, pos.shape[0])
+        pos, vel = pos[a:b], vel[a:b]
+
     if mode == "windows":
         feats = sliding_window_features(pos, vel, window_sec=window_sec, fps=fps)
+    elif entry.get("event_start") is not None:
+        a = int(entry["event_start"])
+        b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
+        a, b = _clip_frame_range(a, b, pos.shape[0])
+        feats = [segment_feature_vector(pos[a:b], vel[a:b], fps=fps)]
     else:
-        if entry.get("event_start") is not None:
-            a = int(entry["event_start"])
-            b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
-            a = max(0, min(a, pos.shape[0] - 2))
-            b = max(a + 2, min(b, pos.shape[0]))
-            feats = [segment_feature_vector(pos[a:b], vel[a:b], fps=fps)]
-        elif entry.get("morph_start") is not None:
-            feats = [segment_feature_vector(pos, vel, fps=fps)]
-        else:
-            feats = [segment_feature_vector(pos, vel, fps=fps)]
+        feats = [segment_feature_vector(pos, vel, fps=fps)]
     return [(feature_dict_to_array(f), label) for f in feats]
 
 
@@ -65,6 +83,8 @@ def build_sim_xy(
     manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
     sim_root = sim_root or manifest_path.parent
     entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
+    allowed = set(label_set(include_transitions=include_transitions))
+    entries = [e for e in entries if e.get("behavior") in allowed]
     if not include_transitions:
         entries = [e for e in entries if not is_transition(e.get("behavior", ""))]
     xs, ys = [], []

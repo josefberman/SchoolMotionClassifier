@@ -34,18 +34,6 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_o": (0.0, 0.12),
         "s_cruise": (0.70, 1.05),
     },
-    "fountain_evasion": {
-        "sigma_theta": (0.08, 0.16),
-        "speed_spread": (0.14, 0.26),
-        "sigma_speed": (0.04, 0.08),
-        "w_o": (2.0, 3.2),
-        "w_a": (0.7, 1.4),
-        "threat": {
-            "predator_radius": (140.0, 220.0),
-            "flee_angle_deg": (25.0, 50.0),
-            "w_p": (6.0, 10.0),
-        },
-    },
     "expansion_burst": {
         "sigma_theta": (0.10, 0.18),
         "speed_spread": (0.16, 0.30),

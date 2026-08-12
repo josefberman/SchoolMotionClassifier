@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+# Stable regimes plus radial threat responses (no fountain evasion).
 CANONICAL = (
     "traveling_polarized",
     "milling",
     "swarming",
-    "fountain_evasion",
     "expansion_burst",
     "compaction",
 )
@@ -18,7 +18,6 @@ BEHAVIOR_SHORT = {
     "traveling_polarized": "tpol",
     "milling": "milling",
     "swarming": "swarming",
-    "fountain_evasion": "fountain",
     "expansion_burst": "expansion",
     "compaction": "compaction",
 }
@@ -57,8 +56,8 @@ _SHORT_TO_CANONICAL = {v: k for k, v in BEHAVIOR_SHORT.items()}
 _SHORT_TO_CANONICAL.update({
     "polarized": "traveling_polarized",
     "shoaling": "swarming",
-    "fountain": "fountain_evasion",
     "burst": "expansion_burst",
+    "spread": "expansion_burst",
     "expansion": "expansion_burst",
     "contraction": "compaction",
 })
@@ -83,7 +82,10 @@ def canonicalize(label: str, aliases: dict[str, str] | None = None) -> str:
     aliases = aliases or load_aliases()
     key = label.strip().lower()
     if key in aliases:
-        return aliases[key]
+        resolved = aliases[key]
+        if resolved not in ALL_LABELS:
+            raise ValueError(f"Unknown label: {label!r}")
+        return resolved
     if key in CANONICAL:
         return key
     if key in TRANSITIONS:
