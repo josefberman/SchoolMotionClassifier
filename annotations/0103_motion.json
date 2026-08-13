@@ -1,7 +1,7 @@
 {
   "dataset": "0103",
   "fps": 29.97,
-  "source": "manual video review — partial coverage",
+  "source": "manual video review \u2014 partial coverage",
   "segments": [
     {
       "start": "00:00",
@@ -124,9 +124,19 @@
       "label": "polarized"
     },
     {
+      "start": "04:59",
+      "end": "05:06",
+      "label": "e-"
+    },
+    {
       "start": "05:06",
       "end": "05:12",
       "label": "milling"
+    },
+    {
+      "start": "05:12",
+      "end": "05:20",
+      "label": "e+"
     },
     {
       "start": "05:20",
@@ -209,6 +219,11 @@
       "label": "milling"
     },
     {
+      "start": "09:20",
+      "end": "09:23",
+      "label": "e-"
+    },
+    {
       "start": "09:23",
       "end": "10:03",
       "label": "polarized"
@@ -222,6 +237,16 @@
       "start": "10:07",
       "end": "10:10",
       "label": "milling"
+    },
+    {
+      "start": "10:10",
+      "end": "10:18",
+      "label": "e+"
+    },
+    {
+      "start": "10:18",
+      "end": "10:24",
+      "label": "e-"
     },
     {
       "start": "10:24",

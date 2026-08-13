@@ -1,50 +1,200 @@
 #!/usr/bin/env python3
-"""Quick calibration smoke: run a few sims and print order-parameter signatures."""
+"""Summarize order-parameter features over generated sims and/or real annotations."""
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.labels import CANONICAL
-from src.sim.model_fast import run_simulation_fast
-from src.sim.validate import summarize_metrics, validate_behavior
+from src.features.dataset import (
+    features_from_sim_entry,
+    load_manifest,
+    load_real_segments,
+)
+from src.features.order_params import AGG_FEATURE_NAMES
+from src.features.windows import feature_dict_to_array, segment_feature_vector
+from src.labels import CANONICAL, is_transition
+from src.sim.io import load_trajectory_csv
+
+
+def _aggregate(rows: dict[str, list[np.ndarray]]) -> dict[str, dict]:
+    report: dict[str, dict] = {}
+    for behavior in sorted(rows):
+        xs = np.vstack(rows[behavior])
+        feat_stats = {}
+        for i, name in enumerate(AGG_FEATURE_NAMES):
+            col = xs[:, i]
+            feat_stats[name] = {
+                "mean": float(np.mean(col)),
+                "std": float(np.std(col)),
+            }
+        report[behavior] = {
+            "n_segments": int(len(xs)),
+            "features": feat_stats,
+        }
+    return report
+
+
+def _summarize_sim(
+    manifest_path: Path,
+    sim_root: Path,
+    *,
+    include_transitions: bool = False,
+    valid_only: bool = True,
+) -> dict[str, dict]:
+    rows: dict[str, list[np.ndarray]] = defaultdict(list)
+    allowed = set(CANONICAL)
+    for entry in load_manifest(manifest_path):
+        behavior = entry.get("behavior", "")
+        if not include_transitions:
+            if is_transition(behavior) or behavior not in allowed:
+                continue
+        if valid_only and not entry.get("valid", True):
+            continue
+        csv_path = sim_root / entry["csv"]
+        if not csv_path.exists():
+            continue
+        for feat_vec, label in features_from_sim_entry(entry, sim_root=sim_root):
+            rows[label if include_transitions else behavior].append(feat_vec)
+    return _aggregate(rows)
+
+
+def _summarize_real(
+    *,
+    annotations_dir: Path | None = None,
+    include_transitions: bool = False,
+    min_frames: int = 15,
+) -> dict[str, dict]:
+    rows: dict[str, list[np.ndarray]] = defaultdict(list)
+    allowed = set(CANONICAL)
+    for seg in load_real_segments(annotations_dir=annotations_dir):
+        label = seg["label"]
+        if not include_transitions:
+            if is_transition(label) or label not in allowed:
+                continue
+        pos, vel = load_trajectory_csv(ROOT / seg["csv"])
+        a, b = seg["start"], min(seg["end"], pos.shape[0])
+        if b - a < min_frames:
+            continue
+        feat = segment_feature_vector(pos[a:b], vel[a:b], fps=seg["fps"])
+        rows[label].append(feature_dict_to_array(feat))
+    return _aggregate(rows)
+
+
+def _print_report(report: dict[str, dict], *, title: str) -> None:
+    print(title)
+    for behavior, block in report.items():
+        n = block.get("n_segments", block.get("n_clips", 0))
+        print(f"{behavior}  (n={n})")
+        for name in AGG_FEATURE_NAMES:
+            stats = block["features"][name]
+            print(f"  {name:16s}  mean={stats['mean']:+.4f}  std={stats['std']:.4f}")
+        print()
 
 
 def main() -> None:
-    report = {}
-    for behavior in CANONICAL:
-        rows = []
-        for n in (20, 40):
-            for seed in (0, 1, 2):
-                ov = {}
-                if behavior == "milling" and seed == 2:
-                    ov = {"bidirectional_frac": 0.45, "cross_align_scale": 0.15, "w_circ": 0.35}
-                res = run_simulation_fast(behavior, n, seed, overrides=ov)
-                m = summarize_metrics(res.positions, res.velocities)
-                ok = validate_behavior(behavior, m, res.positions, res.velocities)
-                rows.append({"n": n, "seed": seed, "valid": ok, **{k: m[k] for k in m if k.endswith("_mean") or k in ("sigma_d_delta", "v_r_event")}})
-        report[behavior] = rows
-        n_ok = sum(1 for r in rows if r["valid"])
-        print(f"{behavior}: {n_ok}/{len(rows)} valid")
-        for r in rows:
-            print(
-                f"  N={r['n']} seed={r['seed']} valid={r['valid']} "
-                f"φdir={r['phi_dir_mean']:.2f} |L|={abs(r['l_bar_mean']):.2f} "
-                f"φrot={r['phi_rot_mean']:.2f} φtan={r['phi_tan_mean']:.2f} "
-                f"vr={r['v_r_bar_mean']:.2f} σd={r['sigma_d_mean']:.1f}"
-            )
+    parser = argparse.ArgumentParser(
+        description="Mean/std of segment features per behavior (sim manifest and/or real annotations).",
+    )
+    parser.add_argument(
+        "--source",
+        choices=("sim", "real", "both"),
+        default="sim",
+        help="Data source (default: sim)",
+    )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=ROOT / "sim_datasets" / "manifest.json",
+        help="Path to sim manifest.json from generate_sims.py",
+    )
+    parser.add_argument(
+        "--sim-root",
+        type=Path,
+        default=None,
+        help="Sim dataset root (default: parent of manifest)",
+    )
+    parser.add_argument(
+        "--annotations-dir",
+        type=Path,
+        default=ROOT / "annotations",
+        help="Directory containing *_motion.json annotation files",
+    )
+    parser.add_argument(
+        "--min-frames",
+        type=int,
+        default=15,
+        help="Minimum segment length for real annotations (default: 15 frames)",
+    )
+    parser.add_argument(
+        "--transitions",
+        action="store_true",
+        help="Include transition-labelled segments/clips",
+    )
+    parser.add_argument(
+        "--include-invalid",
+        action="store_true",
+        help="Include sim manifest entries marked valid=false",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "results" / "calibration_report.json",
+        help="JSON output path",
+    )
+    args = parser.parse_args()
 
-    out = ROOT / "results" / "calibration_report.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2)
+    payload: dict = {}
+    printed = False
+
+    if args.source in ("sim", "both"):
+        sim_root = args.sim_root or args.manifest.parent
+        if not args.manifest.exists():
+            raise SystemExit(f"Manifest not found: {args.manifest}  (run generate_sims.py first)")
+        sim_report = _summarize_sim(
+            args.manifest,
+            sim_root,
+            include_transitions=args.transitions,
+            valid_only=not args.include_invalid,
+        )
+        if not sim_report:
+            raise SystemExit(f"No sim clips found under {sim_root}")
+        _print_report(sim_report, title="=== Simulations (generate_sims.py) ===")
+        printed = True
+        payload["sim"] = sim_report
+
+    if args.source in ("real", "both"):
+        real_report = _summarize_real(
+            annotations_dir=args.annotations_dir,
+            include_transitions=args.transitions,
+            min_frames=args.min_frames,
+        )
+        if not real_report:
+            raise SystemExit(
+                f"No real segments found in {args.annotations_dir} "
+                "(check annotations and schooling-datasets paths)"
+            )
+        if printed:
+            print()
+        _print_report(real_report, title="=== Real annotations ===")
+        payload["real"] = real_report if args.source == "both" else real_report
+
+    if args.source != "both":
+        payload = payload.get(args.source, payload)
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with open(args.out, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
         f.write("\n")
-    print(f"Wrote {out}")
+    print(f"Wrote {args.out}")
 
 
 if __name__ == "__main__":

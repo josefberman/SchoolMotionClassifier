@@ -5,17 +5,26 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-# Three stable schooling regimes (Tunström-style macroscopic states).
-CANONICAL = (
+# Stable schooling regimes plus threat-response states (E+/E-).
+STABLE_BEHAVIORS = (
     "traveling_polarized",
     "milling",
     "swarming",
 )
 
+THREAT_BEHAVIORS = (
+    "expansion_burst",
+    "compaction",
+)
+
+CANONICAL = STABLE_BEHAVIORS + THREAT_BEHAVIORS
+
 BEHAVIOR_SHORT = {
     "traveling_polarized": "tpol",
     "milling": "milling",
     "swarming": "swarming",
+    "expansion_burst": "expansion",
+    "compaction": "compaction",
 }
 
 TRANSITIONS = tuple(
@@ -33,8 +42,19 @@ def is_baseline(label: str) -> bool:
     return label in CANONICAL
 
 
-def label_set(*, include_transitions: bool) -> tuple[str, ...]:
-    return ALL_LABELS if include_transitions else CANONICAL
+def is_threat(label: str) -> bool:
+    return label in THREAT_BEHAVIORS
+
+
+def is_stable(label: str) -> bool:
+    return label in STABLE_BEHAVIORS
+
+
+def label_set(*, include_transitions: bool, stable_only: bool = False) -> tuple[str, ...]:
+    """Return allowed labels. stable_only / not include_transitions → baselines only (incl. e+/e−)."""
+    if include_transitions and not stable_only:
+        return ALL_LABELS
+    return CANONICAL
 
 
 _ROOT = Path(__file__).resolve().parents[1]

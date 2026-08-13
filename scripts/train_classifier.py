@@ -26,7 +26,7 @@ def main() -> None:
         "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Train on stable states only (tpol, milling, swarming); exclude transition clips",
+        help="Train on baseline clips only (tpol, milling, swarming, e+, e−); exclude transitions",
     )
     parser.add_argument(
         "--manifest",
@@ -49,11 +49,13 @@ def main() -> None:
     args = parser.parse_args()
 
     sim_root = args.sim_root or args.manifest.parent
+    stable_only = args.transitions is False
     report = train_classifier(
         out_dir=args.out_dir,
         manifest_path=args.manifest,
         sim_root=sim_root,
-        include_transitions=args.transitions,
+        include_transitions=False if stable_only else args.transitions,
+        stable_only=stable_only,
     )
     summary = {k: report[k] for k in report if k != "classification_report"}
     print(json.dumps(summary, indent=2))

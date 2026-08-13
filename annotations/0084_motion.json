@@ -1,7 +1,7 @@
 {
   "dataset": "0084",
   "fps": 29.97,
-  "source": "manual video review — partial coverage",
+  "source": "manual video review \u2014 partial coverage",
   "segments": [
     {
       "start": "00:00",
@@ -89,6 +89,16 @@
       "label": "polarized"
     },
     {
+      "start": "07:24.5",
+      "end": "07:27",
+      "label": "e+"
+    },
+    {
+      "start": "07:27",
+      "end": "07:29.5",
+      "label": "e-"
+    },
+    {
       "start": "07:29.5",
       "end": "07:38",
       "label": "polarized"
@@ -122,6 +132,16 @@
       "start": "10:50",
       "end": "11:42",
       "label": "polarized"
+    },
+    {
+      "start": "11:42",
+      "end": "11:44.5",
+      "label": "e+"
+    },
+    {
+      "start": "11:44.5",
+      "end": "11:48",
+      "label": "e-"
     },
     {
       "start": "11:48",

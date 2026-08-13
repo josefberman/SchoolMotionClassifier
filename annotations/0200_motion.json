@@ -1,44 +1,192 @@
 {
   "dataset": "0200",
   "fps": 29.97,
-  "source": "manual video review — partial coverage",
+  "source": "manual video review \u2014 partial coverage",
   "segments": [
-    {"start": "00:05", "end": "00:46", "label": "polarized"},
-    {"start": "00:46", "end": "00:51", "label": "tpol_to_m"},
-    {"start": "00:51", "end": "01:04", "label": "milling"},
-    {"start": "01:04", "end": "01:09", "label": "m_to_tpol"},
-    {"start": "01:09", "end": "01:19", "label": "polarized"},
-    {"start": "01:19", "end": "01:23", "label": "tpol_to_s"},
-    {"start": "01:23", "end": "01:31", "label": "swarming"},
-    {"start": "01:31", "end": "01:37", "label": "s_to_m"},
-    {"start": "01:37", "end": "01:59", "label": "milling"},
-    {"start": "01:59", "end": "02:07", "label": "m_to_tpol"},
-    {"start": "02:07", "end": "02:18", "label": "polarized"},
-    {"start": "02:18", "end": "02:24", "label": "tpol_to_m"},
-    {"start": "02:24", "end": "02:34", "label": "milling"},
-    {"start": "02:34", "end": "02:39", "label": "m_to_tpol"},
-    {"start": "02:39", "end": "03:08", "label": "polarized"},
-    {"start": "03:08", "end": "03:13", "label": "tpol_to_m"},
-    {"start": "03:13", "end": "03:22", "label": "milling"},
-    {"start": "03:22", "end": "03:28", "label": "m_to_tpol"},
-    {"start": "03:28", "end": "04:14", "label": "polarized"},
-    {"start": "04:14", "end": "04:18", "label": "tpol_to_m"},
-    {"start": "04:18", "end": "04:30", "label": "milling"},
-    {"start": "04:30", "end": "04:36", "label": "m_to_tpol"},
-    {"start": "04:36", "end": "05:02", "label": "polarized"},
-    {"start": "05:02", "end": "05:08", "label": "tpol_to_m"},
-    {"start": "05:08", "end": "05:46", "label": "milling"},
-    {"start": "05:46", "end": "05:52", "label": "m_to_tpol"},
-    {"start": "05:52", "end": "07:01", "label": "polarized"},
-    {"start": "07:01", "end": "07:07", "label": "tpol_to_s"},
-    {"start": "07:07", "end": "07:15", "label": "swarming"},
-    {"start": "07:15", "end": "07:22", "label": "s_to_tpol"},
-    {"start": "07:22", "end": "07:39", "label": "polarized"},
-    {"start": "07:39", "end": "07:47", "label": "tpol_to_m"},
-    {"start": "07:47", "end": "08:18", "label": "milling"},
-    {"start": "08:18", "end": "08:25", "label": "m_to_tpol"},
-    {"start": "08:25", "end": "08:50", "label": "polarized"},
-    {"start": "08:50", "end": "08:56", "label": "tpol_to_m"},
-    {"start": "08:56", "end": "09:04", "label": "milling"}
+    {
+      "start": "00:05",
+      "end": "00:46",
+      "label": "polarized"
+    },
+    {
+      "start": "00:46",
+      "end": "00:51",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "00:51",
+      "end": "01:04",
+      "label": "milling"
+    },
+    {
+      "start": "01:04",
+      "end": "01:09",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "01:09",
+      "end": "01:19",
+      "label": "polarized"
+    },
+    {
+      "start": "01:19",
+      "end": "01:23",
+      "label": "tpol_to_s"
+    },
+    {
+      "start": "01:23",
+      "end": "01:31",
+      "label": "swarming"
+    },
+    {
+      "start": "01:31",
+      "end": "01:37",
+      "label": "s_to_m"
+    },
+    {
+      "start": "01:37",
+      "end": "01:59",
+      "label": "milling"
+    },
+    {
+      "start": "01:59",
+      "end": "02:07",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "02:07",
+      "end": "02:18",
+      "label": "polarized"
+    },
+    {
+      "start": "02:18",
+      "end": "02:24",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "02:24",
+      "end": "02:34",
+      "label": "milling"
+    },
+    {
+      "start": "02:34",
+      "end": "02:39",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "02:39",
+      "end": "03:08",
+      "label": "polarized"
+    },
+    {
+      "start": "03:08",
+      "end": "03:13",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "03:13",
+      "end": "03:22",
+      "label": "milling"
+    },
+    {
+      "start": "03:22",
+      "end": "03:28",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "03:28",
+      "end": "04:14",
+      "label": "polarized"
+    },
+    {
+      "start": "04:14",
+      "end": "04:18",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "04:18",
+      "end": "04:30",
+      "label": "milling"
+    },
+    {
+      "start": "04:30",
+      "end": "04:36",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "04:36",
+      "end": "05:02",
+      "label": "polarized"
+    },
+    {
+      "start": "05:02",
+      "end": "05:08",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "05:08",
+      "end": "05:46",
+      "label": "milling"
+    },
+    {
+      "start": "05:46",
+      "end": "05:52",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "05:52",
+      "end": "07:01",
+      "label": "polarized"
+    },
+    {
+      "start": "07:01",
+      "end": "07:07",
+      "label": "tpol_to_s"
+    },
+    {
+      "start": "07:07",
+      "end": "07:15",
+      "label": "swarming"
+    },
+    {
+      "start": "07:15",
+      "end": "07:22",
+      "label": "s_to_tpol"
+    },
+    {
+      "start": "07:22",
+      "end": "07:39",
+      "label": "polarized"
+    },
+    {
+      "start": "07:39",
+      "end": "07:47",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "07:47",
+      "end": "08:18",
+      "label": "milling"
+    },
+    {
+      "start": "08:18",
+      "end": "08:25",
+      "label": "m_to_tpol"
+    },
+    {
+      "start": "08:25",
+      "end": "08:50",
+      "label": "polarized"
+    },
+    {
+      "start": "08:50",
+      "end": "08:56",
+      "label": "tpol_to_m"
+    },
+    {
+      "start": "08:56",
+      "end": "09:04",
+      "label": "milling"
+    }
   ]
 }

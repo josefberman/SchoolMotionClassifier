@@ -34,6 +34,29 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_o": (0.0, 0.12),
         "s_cruise": (0.70, 1.05),
     },
+    "expansion_burst": {
+        "sigma_theta": (0.08, 0.16),
+        "speed_spread": (0.20, 0.32),
+        "sigma_speed": (0.04, 0.08),
+        "s_escape": (3.8, 5.2),
+        "w_r": (1.4, 2.0),
+        "threat": {
+            "predator_radius": (150, 210),
+            "beta_p": (1.4, 2.2),
+            "beta_n": (1.2, 2.0),
+        },
+    },
+    "compaction": {
+        "sigma_theta": (0.12, 0.20),
+        "speed_spread": (0.18, 0.30),
+        "w_a": (1.1, 1.8),
+        "d0": (34, 46),
+        "threat": {
+            "predator_radius": (170, 230),
+            "compact_delta_d0": (20, 34),
+            "compact_tau": (5, 10),
+        },
+    },
 }
 
 _INT_KEYS = {

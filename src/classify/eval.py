@@ -25,17 +25,24 @@ def eval_real(
     model_path: Path | None = None,
     out_dir: Path | None = None,
     include_transitions: bool | None = None,
+    stable_only: bool = False,
 ) -> dict:
     out_dir = out_dir or (ROOT / "results")
     model_path = model_path or (out_dir / "classifier.joblib")
     bundle = joblib.load(model_path)
     model = bundle["model"]
     le = bundle["label_encoder"]
+    model_classes = [str(c) for c in le.classes_]
 
     if include_transitions is None:
-        include_transitions = any(is_transition(str(c)) for c in le.classes_)
+        include_transitions = any(is_transition(c) for c in model_classes)
+    if stable_only:
+        include_transitions = False
 
-    X_all, y_all, _, _meta_all = build_real_xy(include_transitions=include_transitions)
+    X_all, y_all, _, _meta_all = build_real_xy(
+        include_transitions=include_transitions,
+        stable_only=stable_only,
+    )
     known = set(le.classes_)
     known_mask = np.array([yi in known for yi in y_all])
     X, y = X_all[known_mask], y_all[known_mask]
@@ -44,6 +51,7 @@ def eval_real(
     report: dict = {
         "n_real": int(len(y)),
         "include_transitions": include_transitions,
+        "stable_only": stable_only,
         "n_classes_in_model": int(len(le.classes_)),
         "label_counts": {lab: int(np.sum(y == lab)) for lab in present_labels},
         "segment_counts": _count_by_kind(y),

@@ -5,11 +5,13 @@ Uses kNN instead of Voronoi (still local, anisotropic via blind spot approx).
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 import numpy as np
 
 from src.sim.model import SimResult, STATE_BASELINE, STATE_FOUNTAIN, STATE_STARTLE, STATE_COMPACT, STATE_RECOVER, _wrap
+from src.labels import THREAT_BEHAVIORS
 
 
 def _knn_idx(pos: np.ndarray, k: int) -> np.ndarray:
@@ -275,14 +277,15 @@ class FastSchoolSimulator:
         if mode == "startle" and active:
             if full_clip:
                 self.state[:] = STATE_STARTLE
-                self.w_r[:] = float(cfg["w_r"]) * 2.8
-                self.w_a[:] = float(cfg["w_a"]) * 0.12
-                self.w_o[:] = float(cfg["w_o"]) * 0.15
+                self.w_r[:] = float(cfg["w_r"]) * float(threat.get("w_r_scale", 2.8))
+                self.w_a[:] = float(cfg["w_a"]) * float(threat.get("w_a_scale", 0.12))
+                self.w_o[:] = float(cfg["w_o"]) * float(threat.get("w_o_scale", 0.15))
                 self.s_star[:] = float(cfg.get("s_escape", cfg["s_cruise"] * 2.0))
                 if t == start:
                     away = self.pos - self.pos.mean(axis=0)
+                    h_noise = float(threat.get("heading_noise", 0.35))
                     self.theta = np.mod(
-                        np.arctan2(away[:, 1], away[:, 0]) + self.rng.normal(0, 0.35, self.n),
+                        np.arctan2(away[:, 1], away[:, 0]) + self.rng.normal(0, h_noise, self.n),
                         2 * np.pi,
                     )
             elif start <= t < start + dur + int(threat["escape_duration"]):
@@ -329,10 +332,10 @@ class FastSchoolSimulator:
             delta = float(threat["compact_delta_d0"])
             factor = 1.0 - np.exp(-elapsed / max(tau, 1e-6))
             self.d0[:] = np.maximum(6.0, self.d0_base - delta * factor)
-            self.w_a[:] = float(cfg["w_a"]) * 3.0
-            self.w_o[:] = float(cfg["w_o"]) * 0.35
-            self.w_r[:] = float(cfg["w_r"]) * 0.55
-            self.s_star[:] = float(cfg["s_cruise"]) * 0.55
+            self.w_a[:] = float(cfg["w_a"]) * float(threat.get("w_a_scale", 3.0))
+            self.w_o[:] = float(cfg["w_o"]) * float(threat.get("w_o_scale", 0.35))
+            self.w_r[:] = float(cfg["w_r"]) * float(threat.get("w_r_scale", 0.55))
+            self.s_star[:] = float(cfg["s_cruise"]) * float(threat.get("speed_scale", 0.55))
 
         recover_start = start + dur
         if t >= recover_start and not full_clip:
@@ -366,12 +369,26 @@ class FastSchoolSimulator:
             desired = np.arctan2(r[:, 1], r[:, 0]) + self.circ_sign * np.pi / 2
             t_circ = w_circ * _wrap(desired - self.theta)
         t_cent = np.zeros(self.n)
+        t_radial = np.zeros(self.n)
+        threat = cfg.get("threat") or {}
         if np.any(self.state == STATE_COMPACT):
-            to_c = self.center - self.pos
+            centroid = self.pos.mean(axis=0)
+            to_c = centroid - self.pos
             desired = np.arctan2(to_c[:, 1], to_c[:, 0])
-            t_cent = 0.9 * _wrap(desired - self.theta)
+            align = float(threat.get("radial_align", 0.9))
+            t_cent = align * _wrap(desired - self.theta)
+        if np.any(self.state == STATE_STARTLE) and threat.get("full_clip"):
+            align = float(threat.get("radial_align", 0.0))
+            if align > 0:
+                away = self.pos - self.pos.mean(axis=0)
+                desired = np.arctan2(away[:, 1], away[:, 0])
+                t_radial = np.where(
+                    self.state == STATE_STARTLE,
+                    align * _wrap(desired - self.theta),
+                    0.0,
+                )
         omega = (
-            self.w_r * t_r + self.w_o * t_o + self.w_a * t_a + t_w + self.w_p * t_p + t_circ + t_cent
+            self.w_r * t_r + self.w_o * t_o + self.w_a * t_a + t_w + self.w_p * t_p + t_circ + t_cent + t_radial
             + self.rng.normal(0, float(cfg["sigma_theta"]), self.n)
         )
         omega = np.clip(omega, -float(cfg["omega_max"]), float(cfg["omega_max"]))
@@ -443,6 +460,43 @@ _MORPH_KEYS = (
     "sigma_speed", "speed_spread", "tau_s", "a_max",
 )
 
+_THREAT_BEHAVIORS = frozenset(THREAT_BEHAVIORS)
+
+
+def _apply_threat_window(sim: FastSchoolSimulator, cfg: dict[str, Any], *, active: bool, start: int, end: int) -> None:
+    threat = deepcopy(cfg.get("threat") or {})
+    threat["enabled"] = active and bool(threat.get("mode"))
+    if threat["enabled"]:
+        threat["start_frame"] = int(start)
+        threat["duration"] = max(1, int(end) - int(start))
+    sim.cfg["threat"] = threat
+
+
+def _threat_state(
+    behavior_from: str,
+    behavior_to: str,
+    t: int,
+    morph_start: int,
+    morph_end: int,
+    total_frames: int,
+) -> tuple[bool, str | None, int, int]:
+    """Return (active, cfg_side, threat_start, threat_end) for frame *t*."""
+    from_th = behavior_from in _THREAT_BEHAVIORS
+    to_th = behavior_to in _THREAT_BEHAVIORS
+    if not from_th and not to_th:
+        return False, None, 0, 0
+    if from_th and to_th:
+        if t < morph_start:
+            return True, "from", 0, morph_end
+        return True, "to", morph_start, total_frames
+    if to_th:
+        if t < morph_start:
+            return False, None, 0, 0
+        return True, "to", morph_start, total_frames
+    if t >= morph_end:
+        return False, None, 0, 0
+    return True, "from", 0, morph_end
+
 
 def run_transition_fast(
     behavior_from: str,
@@ -472,9 +526,11 @@ def run_transition_fast(
 
     he = max(float(cfg_from["arena"]["half_extent"]), float(cfg_to["arena"]["half_extent"]))
     cfg_from["arena"]["half_extent"] = he
+    cfg_to["arena"]["half_extent"] = he
     cfg_from["burn_in"] = burn_in
     cfg_from["record_frames"] = total_frames
-    cfg_from["threat"]["enabled"] = False
+    if behavior_from not in _THREAT_BEHAVIORS:
+        cfg_from["threat"]["enabled"] = False
 
     sim = FastSchoolSimulator(n=n, cfg=cfg_from, seed=seed)
 
@@ -513,6 +569,32 @@ def run_transition_fast(
         sim.d0[:] = float(sim.cfg["d0"])
         sim.d0_base = float(sim.cfg["d0"])
         sim.s_star[:] = float(sim.cfg["s_cruise"])
+
+        active, which, t_start, t_end = _threat_state(
+            behavior_from, behavior_to, t, morph_start, morph_end, T,
+        )
+        if active:
+            threat_cfg = cfg_from if which == "from" else cfg_to
+            _apply_threat_window(sim, threat_cfg, active=True, start=t_start, end=t_end)
+            mode = threat_cfg["threat"].get("mode")
+            if which == "to" and t == morph_start:
+                sim.state[:] = STATE_STARTLE if mode == "startle" else STATE_COMPACT
+                sim.z[:] = 0.0
+                sim.predator_pos = None
+                sim.predator_vel = None
+        else:
+            _apply_threat_window(sim, cfg_from, active=False, start=0, end=0)
+            if behavior_from in _THREAT_BEHAVIORS and t >= morph_end:
+                sim.state[:] = STATE_BASELINE
+                sim.z[:] = 0.0
+                sim.w_p[:] = 0.0
+                sim.predator_pos = None
+                sim.predator_vel = None
+            elif behavior_from not in _THREAT_BEHAVIORS and behavior_to not in _THREAT_BEHAVIORS:
+                sim.state[:] = STATE_BASELINE
+                sim.z[:] = 0.0
+                sim.predator_pos = None
+                sim.predator_vel = None
 
         sim.step()
         pos_hist[t] = sim.pos

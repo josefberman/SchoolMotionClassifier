@@ -28,7 +28,7 @@ Per frame, then aggregated over a segment/window:
 5. **v̄r** — signed mean radial velocity
 6. **σd** — spread \mathrm{std}(r_i)
 
-Classifier inputs: mean/std of each, plus length-normalized `sigma_d_slope`, `v_r_bar_slope`, and `l_bar_abs_mean`.
+Classifier inputs: mean and std of **Φ_trans**, **Φ_tan**, and **Φ_rad^±** over each segment (6 features total).
 
 ## Layout
 
@@ -85,8 +85,12 @@ Outputs land in `sim_datasets/.../renders/` or `results/figures/<behavior>/`.
 
 ## Calibrate / inspect signatures
 
+Summarizes mean/std of the six segment features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
+
 ```bash
 python scripts/calibrate_baselines.py
+python scripts/calibrate_baselines.py --source real
+python scripts/calibrate_baselines.py --source both
 ```
 
 

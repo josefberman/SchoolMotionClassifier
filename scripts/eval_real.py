@@ -26,7 +26,7 @@ def main() -> None:
         "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Evaluate stable-state real segments only; exclude transition intervals",
+        help="Evaluate baseline real segments only (incl. e+/e−); exclude transition intervals",
     )
     parser.add_argument(
         "--model",
@@ -42,10 +42,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    stable_only = args.transitions is False
     report = eval_real(
         model_path=args.model,
         out_dir=args.out_dir,
-        include_transitions=args.transitions,
+        include_transitions=False if stable_only else args.transitions,
+        stable_only=stable_only,
     )
     summary = {k: report[k] for k in report if k != "classification_report"}
     print(json.dumps(summary, indent=2))

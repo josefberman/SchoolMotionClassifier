@@ -79,11 +79,12 @@ def build_sim_xy(
     sim_root: Path | None = None,
     mode: str = "segment",
     include_transitions: bool = True,
+    stable_only: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
     sim_root = sim_root or manifest_path.parent
     entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
-    allowed = set(label_set(include_transitions=include_transitions))
+    allowed = set(label_set(include_transitions=include_transitions, stable_only=stable_only))
     entries = [e for e in entries if e.get("behavior") in allowed]
     if not include_transitions:
         entries = [e for e in entries if not is_transition(e.get("behavior", ""))]
@@ -144,6 +145,7 @@ def load_real_segments(
 def build_real_xy(
     min_frames: int = 15,
     include_transitions: bool = True,
+    stable_only: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, list[str], list[dict]]:
     segs = load_real_segments()
     if not include_transitions:

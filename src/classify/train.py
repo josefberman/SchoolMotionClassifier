@@ -29,6 +29,7 @@ def train_classifier(
     manifest_path: Path | None = None,
     sim_root: Path | None = None,
     include_transitions: bool | None = None,
+    stable_only: bool = False,
 ) -> dict:
     out_dir = out_dir or (ROOT / "results")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -36,7 +37,7 @@ def train_classifier(
     manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
     sim_root = sim_root or manifest_path.parent
     if include_transitions is None:
-        include_transitions = manifest_has_transitions(manifest_path)
+        include_transitions = manifest_has_transitions(manifest_path) and not stable_only
 
     X_train, y_train, feat_names = build_sim_xy(
         split="train",
@@ -44,6 +45,7 @@ def train_classifier(
         sim_root=sim_root,
         mode=mode,
         include_transitions=include_transitions,
+        stable_only=stable_only,
     )
     X_test, y_test, _ = build_sim_xy(
         split="test",
@@ -51,11 +53,12 @@ def train_classifier(
         sim_root=sim_root,
         mode=mode,
         include_transitions=include_transitions,
+        stable_only=stable_only,
     )
     if len(X_train) == 0:
         raise RuntimeError("No training samples — run generate_sims.py first")
 
-    classes = label_set(include_transitions=include_transitions)
+    classes = label_set(include_transitions=include_transitions, stable_only=stable_only)
     present_labels = sorted(set(y_train) | set(y_test))
     eval_labels = [lab for lab in classes if lab in present_labels]
 
@@ -74,6 +77,7 @@ def train_classifier(
         "n_train": int(len(X_train)),
         "n_test": int(len(X_test)),
         "include_transitions": include_transitions,
+        "stable_only": stable_only,
         "n_classes": len(eval_labels),
         "train_counts": _count_by_kind(y_train),
         "features": feat_names,

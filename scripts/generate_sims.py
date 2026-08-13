@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate sims × 3 behaviours × group sizes with train/test split."""
+"""Generate sims × 5 behaviours × group sizes with train/test split."""
 
 from __future__ import annotations
 
@@ -45,8 +45,22 @@ def _overrides_for(behavior: str, seed: int) -> dict:
     return ov
 
 
-def _event_window(behavior: str) -> tuple[int | None, int | None]:
+def _event_window(behavior: str, n_frames: int = 150) -> tuple[int | None, int | None]:
+    """Frame slice [start, end) for threat-event features within a recorded clip."""
+    if behavior == "expansion_burst":
+        return int(0.20 * n_frames), min(n_frames, int(0.93 * n_frames))
+    if behavior == "compaction":
+        return int(0.20 * n_frames), min(n_frames, int(0.95 * n_frames))
     return None, None
+
+
+_LABEL_RAW = {
+    "traveling_polarized": "polarized",
+    "milling": "milling",
+    "swarming": "swarming",
+    "expansion_burst": "e+",
+    "compaction": "e-",
+}
 
 
 def generate_one(
@@ -85,12 +99,9 @@ def generate_one(
             json_path = out_root / json_rel
             save_trajectory_csv(csv_path, result.positions, result.velocities)
             fps = 30.0
-            label_raw = {
-                "traveling_polarized": "polarized",
-                "milling": "milling",
-                "swarming": "swarming",
-            }[behavior]
-            es, ee = _event_window(behavior)
+            n_frames = int(result.positions.shape[0])
+            label_raw = _LABEL_RAW[behavior]
+            es, ee = _event_window(behavior, n_frames)
             if es is not None:
                 segments = [
                     {
@@ -103,7 +114,7 @@ def generate_one(
                 segments = [
                     {
                         "start": "00:00",
-                        "end": _frame_to_mmss(result.positions.shape[0], fps),
+                        "end": _frame_to_mmss(n_frames, fps),
                         "label": label_raw,
                     }
                 ]
@@ -121,7 +132,7 @@ def generate_one(
                     video=video,
                     stills=True,
                 )
-            ev_s, ev_e = _event_window(behavior)
+            ev_s, ev_e = _event_window(behavior, n_frames)
             entry = {
                 "behavior": behavior,
                 "n": n,
@@ -193,7 +204,7 @@ def generate_one_transition(
         {
             "start": _frame_to_mmss(0, fps),
             "end": _frame_to_mmss(morph_start, fps),
-            "label": behavior_from,
+            "label": _LABEL_RAW.get(behavior_from, behavior_from),
         },
         {
             "start": _frame_to_mmss(morph_start, fps),
@@ -203,7 +214,7 @@ def generate_one_transition(
         {
             "start": _frame_to_mmss(morph_end, fps),
             "end": _frame_to_mmss(total_frames, fps),
-            "label": behavior_to,
+            "label": _LABEL_RAW.get(behavior_to, behavior_to),
         },
     ]
     save_motion_json(json_path, dataset=stem, fps=fps, segments=segments, source="simulation")
@@ -348,7 +359,8 @@ def main() -> None:
     parser.add_argument(
         "--transitions",
         action="store_true",
-        help="Also generate X→Y transition clips for every pair of base behaviors",
+        help="Also generate X→Y transition clips for every ordered pair of base behaviors "
+        "(5 baselines → 20 transition types, including stable↔expansion/compaction)",
     )
     parser.add_argument(
         "--transition-seeds",
