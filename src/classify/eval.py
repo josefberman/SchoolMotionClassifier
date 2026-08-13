@@ -35,16 +35,10 @@ def eval_real(
     if include_transitions is None:
         include_transitions = any(is_transition(str(c)) for c in le.classes_)
 
-    X_all, y_all, _, _meta_all = build_real_xy(include_transitions=True)
+    X_all, y_all, _, _meta_all = build_real_xy(include_transitions=include_transitions)
     known = set(le.classes_)
     known_mask = np.array([yi in known for yi in y_all])
-    if not include_transitions:
-        kind_mask = np.array([not is_transition(yi) for yi in y_all])
-        use_mask = known_mask & kind_mask
-    else:
-        use_mask = known_mask
-
-    X, y = X_all[use_mask], y_all[use_mask]
+    X, y = X_all[known_mask], y_all[known_mask]
 
     present_labels = sorted(set(y))
     report: dict = {
@@ -54,9 +48,6 @@ def eval_real(
         "label_counts": {lab: int(np.sum(y == lab)) for lab in present_labels},
         "segment_counts": _count_by_kind(y),
         "n_skipped_unknown_label": int(np.sum(~known_mask)),
-        "n_skipped_transitions": int(np.sum(known_mask & np.array([is_transition(yi) for yi in y_all])))
-        if not include_transitions
-        else 0,
     }
 
     if len(X) == 0:

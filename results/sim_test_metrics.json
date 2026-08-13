@@ -1,12 +1,12 @@
 {
-  "n_train": 7200,
-  "n_test": 1800,
-  "include_transitions": true,
-  "n_classes": 9,
+  "n_train": 2400,
+  "n_test": 600,
+  "include_transitions": false,
+  "n_classes": 3,
   "train_counts": {
     "baseline": 2400,
-    "transition": 4800,
-    "total": 7200
+    "transition": 0,
+    "total": 2400
   },
   "features": [
     "phi_dir_mean",
@@ -27,194 +27,66 @@
   ],
   "test_counts": {
     "baseline": 600,
-    "transition": 1200,
-    "total": 1800
+    "transition": 0,
+    "total": 600
   },
-  "sim_test_accuracy": 0.9638888888888889,
-  "sim_test_macro_f1": 0.9639799272864704,
+  "sim_test_accuracy": 0.9966666666666667,
+  "sim_test_macro_f1": 0.996666656249935,
   "classification_report": {
     "traveling_polarized": {
-      "precision": 0.9949238578680203,
-      "recall": 0.98,
-      "f1-score": 0.9874055415617129,
+      "precision": 0.9950248756218906,
+      "recall": 1.0,
+      "f1-score": 0.9975062344139651,
       "support": 200.0
     },
     "milling": {
-      "precision": 0.99,
-      "recall": 0.99,
-      "f1-score": 0.99,
+      "precision": 0.995,
+      "recall": 0.995,
+      "f1-score": 0.995,
       "support": 200.0
     },
     "swarming": {
-      "precision": 0.9704433497536946,
-      "recall": 0.985,
-      "f1-score": 0.9776674937965261,
-      "support": 200.0
-    },
-    "traveling_polarized_to_milling": {
-      "precision": 0.8926829268292683,
-      "recall": 0.915,
-      "f1-score": 0.9037037037037037,
-      "support": 200.0
-    },
-    "traveling_polarized_to_swarming": {
-      "precision": 0.8894472361809045,
-      "recall": 0.885,
-      "f1-score": 0.8872180451127819,
-      "support": 200.0
-    },
-    "milling_to_traveling_polarized": {
       "precision": 1.0,
       "recall": 0.995,
       "f1-score": 0.9974937343358395,
       "support": 200.0
     },
-    "milling_to_swarming": {
-      "precision": 1.0,
-      "recall": 0.995,
-      "f1-score": 0.9974937343358395,
-      "support": 200.0
-    },
-    "swarming_to_traveling_polarized": {
-      "precision": 0.9597989949748744,
-      "recall": 0.955,
-      "f1-score": 0.9573934837092731,
-      "support": 200.0
-    },
-    "swarming_to_milling": {
-      "precision": 0.9798994974874372,
-      "recall": 0.975,
-      "f1-score": 0.9774436090225563,
-      "support": 200.0
-    },
-    "accuracy": 0.9638888888888889,
+    "accuracy": 0.9966666666666667,
     "macro avg": {
-      "precision": 0.9641328736771333,
-      "recall": 0.963888888888889,
-      "f1-score": 0.9639799272864704,
-      "support": 1800.0
+      "precision": 0.9966749585406302,
+      "recall": 0.9966666666666667,
+      "f1-score": 0.996666656249935,
+      "support": 600.0
     },
     "weighted avg": {
-      "precision": 0.9641328736771333,
-      "recall": 0.9638888888888889,
-      "f1-score": 0.9639799272864703,
-      "support": 1800.0
+      "precision": 0.9966749585406302,
+      "recall": 0.9966666666666667,
+      "f1-score": 0.9966666562499349,
+      "support": 600.0
     }
   },
   "confusion_matrix": [
     [
-      196,
+      200,
       0,
-      0,
-      3,
-      0,
-      0,
-      0,
-      1,
       0
     ],
     [
-      0,
-      198,
-      0,
-      0,
-      0,
-      0,
-      0,
       1,
-      1
-    ],
-    [
-      0,
-      1,
-      197,
-      0,
-      1,
-      0,
-      0,
-      1,
-      0
-    ],
-    [
-      0,
-      0,
-      0,
-      183,
-      16,
-      0,
-      0,
-      1,
-      0
-    ],
-    [
-      0,
-      1,
-      2,
-      17,
-      177,
-      0,
-      0,
-      3,
-      0
-    ],
-    [
-      0,
-      0,
-      0,
-      0,
-      0,
       199,
-      0,
-      1,
       0
     ],
     [
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      199,
-      0,
-      1
-    ],
-    [
       1,
-      0,
-      1,
-      1,
-      4,
-      0,
-      0,
-      191,
-      2
-    ],
-    [
-      0,
-      0,
-      3,
-      1,
-      1,
-      0,
-      0,
-      0,
-      195
+      199
     ]
   ],
   "confusion_labels": [
     "traveling_polarized",
     "milling",
-    "swarming",
-    "traveling_polarized_to_milling",
-    "traveling_polarized_to_swarming",
-    "milling_to_traveling_polarized",
-    "milling_to_swarming",
-    "swarming_to_traveling_polarized",
-    "swarming_to_milling"
+    "swarming"
   ],
-  "sim_test_baseline_accuracy": 0.985,
-  "sim_test_baseline_macro_f1": 0.9916078392811788,
-  "sim_test_transition_accuracy": 0.9533333333333334,
-  "sim_test_transition_macro_f1": 0.9565714046967527
+  "sim_test_baseline_accuracy": 0.9966666666666667,
+  "sim_test_baseline_macro_f1": 0.996666656249935
 }

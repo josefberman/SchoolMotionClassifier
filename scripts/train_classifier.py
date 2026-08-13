@@ -23,9 +23,10 @@ def main() -> None:
     )
     group.add_argument(
         "--no-transitions",
+        "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Train on six baseline behaviours only",
+        help="Train on stable states only (tpol, milling, swarming); exclude transition clips",
     )
     parser.add_argument(
         "--manifest",

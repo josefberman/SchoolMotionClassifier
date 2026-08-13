@@ -94,9 +94,16 @@ python scripts/calibrate_baselines.py
 ## Train & evaluate
 
 ```bash
-python scripts/train_classifier.py   # sim train → sim test metrics
-python scripts/eval_real.py          # annotated real segments (no compaction)
+# Default: include transition clips/segments when manifest/model supports them
+python scripts/train_classifier.py
+python scripts/eval_real.py
+
+# Stable states only (tpol, milling, swarming) — no transition labels
+python scripts/train_classifier.py --stable-only
+python scripts/eval_real.py --stable-only
 ```
+
+`--stable-only` is an alias for `--no-transitions`.
 
 Outputs:
 

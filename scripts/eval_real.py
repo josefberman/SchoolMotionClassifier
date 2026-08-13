@@ -23,9 +23,10 @@ def main() -> None:
     )
     group.add_argument(
         "--no-transitions",
+        "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Evaluate baseline-regime segments only",
+        help="Evaluate stable-state real segments only; exclude transition intervals",
     )
     parser.add_argument(
         "--model",
