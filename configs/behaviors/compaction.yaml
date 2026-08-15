@@ -1,13 +1,13 @@
 behavior: compaction
-w_r: 0.15
-w_o: 0.0
-w_a: 0.0
-sigma_theta: 0.003
-theta_init_std: 0.30
-speed_spread: 0.10
+w_r: 1.292989
+w_o: 2.471615
+w_a: 2.12081
+sigma_theta: 0.006407
+theta_init_std: 0.341776
+speed_spread: 0.146618
 sigma_speed: 0.02
-omega_max: 0.40
-s_cruise: 1.05
+omega_max: 0.4
+s_cruise: 1.197455
 tau_s: 3.0
 a_max: 0.35
 r_repulse: 18.0
@@ -20,13 +20,13 @@ threat:
   enabled: true
   mode: compact
   full_clip: true
-  radial_align: 30.0
-  w_r_scale: 0.0
-  w_o_scale: 0.0
-  w_a_scale: 0.0
-  speed_scale: 0.90
+  radial_align: 3.011433
+  w_r_scale: 0.717842
+  w_o_scale: 1.115966
+  w_a_scale: 0.543031
+  speed_scale: 0.992962
   predator_speed: 7.0
-  predator_radius: 206
-  compact_delta_d0: 26
-  compact_tau: 5
+  predator_radius: 175
+  compact_delta_d0: 19
+  compact_tau: 6
   w_p: 0.3

@@ -19,7 +19,7 @@ from src.sim.config import deep_merge
 from src.sim.io import save_motion_json, save_trajectory_csv
 from src.sim.model_fast import run_simulation_fast, run_transition_fast
 from src.sim.render import render_simulation
-from src.sim.validate import summarize_metrics, validate_behavior
+from src.sim.validate import metrics_for_validation, validate_behavior
 
 N_VALUES = [10, 30, 50, 100, 200]
 N_SEEDS = 200
@@ -88,7 +88,16 @@ def generate_one(
         except Exception as e:
             last_err = str(e)
             continue
-        metrics = summarize_metrics(result.positions, result.velocities)
+        fps = 30.0
+        n_frames = int(result.positions.shape[0])
+        es, ee = _event_window(behavior, n_frames)
+        metrics = metrics_for_validation(
+            behavior,
+            result.positions,
+            result.velocities,
+            event_start=es,
+            event_end=ee,
+        )
         ok = validate_behavior(behavior, metrics, result.positions, result.velocities)
         if ok or attempt == max_retries - 1:
             rel_dir = Path(behavior) / f"N{n}"
@@ -98,10 +107,7 @@ def generate_one(
             csv_path = out_root / csv_rel
             json_path = out_root / json_rel
             save_trajectory_csv(csv_path, result.positions, result.velocities)
-            fps = 30.0
-            n_frames = int(result.positions.shape[0])
             label_raw = _LABEL_RAW[behavior]
-            es, ee = _event_window(behavior, n_frames)
             if es is not None:
                 segments = [
                     {
@@ -132,7 +138,6 @@ def generate_one(
                     video=video,
                     stills=True,
                 )
-            ev_s, ev_e = _event_window(behavior, n_frames)
             entry = {
                 "behavior": behavior,
                 "n": n,
@@ -142,8 +147,8 @@ def generate_one(
                 "csv": str(csv_rel).replace("\\", "/"),
                 "motion_json": str(json_rel).replace("\\", "/"),
                 "fps": fps,
-                "event_start": ev_s,
-                "event_end": ev_e,
+                "event_start": es,
+                "event_end": ee,
                 "metrics": metrics,
                 "attempts": attempt + 1,
             }

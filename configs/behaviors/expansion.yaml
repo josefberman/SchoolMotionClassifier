@@ -1,14 +1,14 @@
 behavior: expansion_burst
-w_r: 0.0
-w_o: 0.0
-w_a: 0.0
-sigma_theta: 0.006
-theta_init_std: 0.35
-speed_spread: 0.12
-sigma_speed: 0.02
+w_r: 1.734679
+w_o: 1.395338
+w_a: 1.602694
+sigma_theta: 0.010544
+theta_init_std: 0.354209
+speed_spread: 0.110434
+sigma_speed: 0.039893
 omega_max: 0.55
-s_cruise: 1.25
-s_escape: 2.6
+s_cruise: 1.123437
+s_escape: 1.888133
 tau_s: 2.0
 a_max: 0.6
 r_repulse: 12.0
@@ -21,16 +21,16 @@ threat:
   enabled: true
   mode: startle
   full_clip: true
-  heading_noise: 0.18
-  radial_align: 14.0
-  w_r_scale: 0.0
-  w_o_scale: 0.0
-  w_a_scale: 0.0
+  heading_noise: 0.917187
+  radial_align: 0.032337
+  w_r_scale: 1.408348
+  w_o_scale: 1.403177
+  w_a_scale: 1.330795
   predator_speed: 7.0
-  predator_radius: 178
+  predator_radius: 173
   flee_angle_deg: 45.0
   w_p: 5.0
   z_thr: 0.25
-  beta_p: 1.5
-  beta_n: 1.5
+  beta_p: 1.701586
+  beta_n: 1.365768
   tau_z: 4.0
