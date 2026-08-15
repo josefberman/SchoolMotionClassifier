@@ -18,9 +18,12 @@ ARENA = "#b0b0b0"
 BG = "#ffffff"
 PREDATOR = "#c0392b"
 
-VIDEO_FISH_LEN = 9.0
-STILL_FISH_LEN = 12.0
+FISH_LEN = 15.0
+FISH_WIDTH = 3.0
+VIDEO_FISH_LEN = FISH_LEN
+STILL_FISH_LEN = FISH_LEN
 
+# Template spans x in [-0.5, 0.5] (length) and y in [-0.5, 0.5] at the widest point (width).
 _FISH_SHAPE = np.array([
     [0.50, 0.00],
     [0.42, 0.12],
@@ -35,24 +38,28 @@ _FISH_SHAPE = np.array([
     [0.25, -0.18],
     [0.42, -0.12],
 ])
+_FISH_SHAPE = _FISH_SHAPE.copy()
+_FISH_SHAPE[:, 1] /= np.max(np.abs(_FISH_SHAPE[:, 1])) * 2.0
 
 
 def _make_fish_patches(
     pos: np.ndarray,
     vel: np.ndarray,
     length: float,
+    width: float = FISH_WIDTH,
 ) -> list[Polygon]:
     """Create rotated fish-shaped polygons for each agent."""
     n = pos.shape[0]
     speeds = np.linalg.norm(vel, axis=1)
     angles = np.arctan2(vel[:, 1], vel[:, 0])
+    scale = np.array([length, width])
 
     patches = []
     for i in range(n):
         a = angles[i] if speeds[i] > 1e-9 else 0.0
         cos_a, sin_a = np.cos(a), np.sin(a)
         rot = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
-        verts = (rot @ (_FISH_SHAPE * length).T).T + pos[i]
+        verts = (rot @ (_FISH_SHAPE * scale).T).T + pos[i]
         patches.append(Polygon(verts, closed=True))
     return patches
 

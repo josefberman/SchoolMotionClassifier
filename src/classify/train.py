@@ -1,4 +1,4 @@
-"""Train gradient-boosting motion classifier on simulated features."""
+"""Train XGBoost motion classifier on simulated features."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
 
 from src.features.dataset import build_sim_xy, manifest_has_transitions
 from src.labels import is_transition, label_set
@@ -65,11 +65,12 @@ def train_classifier(
     le = LabelEncoder()
     le.fit(list(classes))
     yt = le.transform(y_train)
-    model = HistGradientBoostingClassifier(
+    model = XGBClassifier(
         max_depth=6,
         learning_rate=0.08,
-        max_iter=200,
+        n_estimators=200,
         random_state=42,
+        n_jobs=-1,
     )
     model.fit(X_train, yt)
 

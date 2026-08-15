@@ -31,26 +31,12 @@ def _test_seed_start(n_seeds: int) -> int:
 
 
 def _overrides_for(behavior: str, seed: int) -> dict:
-    ov: dict = {}
-    if behavior == "milling":
-        # even seeds: unidirectional, odd seeds: bidirectional
-        if seed % 2 == 1:
-            ov["bidirectional_frac"] = 0.5
-            ov["cross_align_scale"] = 0.05
-            ov["w_circ"] = 2.0
-        else:
-            ov["bidirectional_frac"] = 0.0
-            ov["cross_align_scale"] = 1.0
-            ov["w_circ"] = 2.5
-    return ov
+    """Seed-specific behavior overrides. Circulation sign is sampled inside the simulator."""
+    return {}
 
 
 def _event_window(behavior: str, n_frames: int = 150) -> tuple[int | None, int | None]:
-    """Frame slice [start, end) for threat-event features within a recorded clip."""
-    if behavior == "expansion_burst":
-        return int(0.20 * n_frames), min(n_frames, int(0.93 * n_frames))
-    if behavior == "compaction":
-        return int(0.20 * n_frames), min(n_frames, int(0.95 * n_frames))
+    """Optional feature window. Expansion/compaction now use the full recorded clip."""
     return None, None
 
 

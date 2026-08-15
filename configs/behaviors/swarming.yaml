@@ -1,21 +1,16 @@
 behavior: swarming
-w_r: 1.95826
-w_o: 0.331193
-w_a: 0.436263
-sigma_theta: 0.405985
-theta_init_std: 0.0
-speed_spread: 0.313869
-sigma_speed: 0.076313
-omega_max: 0.7
-s_cruise: 0.995727
-tau_s: 4.0
-a_max: 0.25
-r_repulse: 22.0
-r_orient: 30.0
-r_attract: 150.0
-d0: 34.0
-w_circ: 0.0
+r_r: 30.0
+r_o: 90.0
+r_a: 150.0
+w_r: 2.986833
+w_o: 1.447368
+w_a: 1.284794
+w_tan: 0.05765
+w_rad: -0.028972
+sigma_theta: 0.028518
+s_0: 1.046652
+sigma_s: 0.031183
+omega_max: 0.027849
+a_max: 0.133025
 burn_in: 45
 record_frames: 150
-threat:
-  enabled: false

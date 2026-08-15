@@ -1,39 +1,31 @@
 # School Motion Classifier
 
-Simulate six fish-school behaviours, extract collective order parameters, train a classifier on simulations, and evaluate on held-out sims plus manually annotated real trajectories.
+Simulate five fish-school behaviours with one Couzin-zone dynamical model, extract collective order parameters, train a classifier on simulations, and evaluate on held-out sims plus manually annotated real trajectories.
 
 ## Behaviours
 
+Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a, w_tan, w_rad, sigma_theta, s_0, sigma_s, omega_max, a_max`). Expansion/compaction are signed radial steering (`w_rad`); milling is tangential steering (`w_tan`).
 
-| Canonical label       | Short      | Description                                         |
-| --------------------- | ---------- | --------------------------------------------------- |
-| `traveling_polarized` | tpol       | High directional alignment, net school translation  |
-| `milling`             | milling    | Coherent (or bidirectional) rotation about centroid |
-| `swarming`            | swarming   | Cohesive, low polarization                          |
-| `fountain_evasion`    | fountain   | Split-and-merge around a crossing predator          |
-| `expansion_burst`     | expansion  | Startle cascade, rapid expansion                    |
-| `compaction`          | compaction | Threat-driven reduction of preferred spacing        |
+| Canonical label       | Short      | Description                                        |
+| --------------------- | ---------- | -------------------------------------------------- |
+| `traveling_polarized` | tpol       | High `w_o`, low `sigma_theta`; net translation     |
+| `milling`             | milling    | `w_tan > 0`; rotation about the school centroid |
+| `swarming`            | swarming   | Weak `w_o`, larger `sigma_theta`; low polarization |
+| `expansion_burst`     | expansion  | `w_rad > 0`; outward radial tendency           |
+| `compaction`          | compaction | `w_rad < 0`; inward radial tendency            |
 
+`fountain_evasion` remains as an unused YAML stub and is not part of the five-class training set.
 
+## Simulator
 
-
-## Order-parameter features
-
-Per frame, then aggregated over a segment/window:
-
-1. **Φdir** — directional polarization
-2. **L̄** — normalized angular momentum
-3. **Φrot** — rotational polarization
-4. **Φtan** — tangential order
-5. **v̄r** — signed mean radial velocity
-6. **σd** — spread \mathrm{std}(r_i)
+One model for all behaviors. Social interactions use exclusive Couzin zones (`d < r_r` repulsion, `r_r ≤ d < r_o` orientation, `r_o ≤ d < r_a` attraction). Heading noise `epsilon_w_i` and speed noise `epsilon_a_i` are sampled i.i.d. `Normal(0,1)` each step and are not YAML parameters. Arena, `dt`, `burn_in`, and `record_frames` are simulation metadata.
 
 Classifier inputs: mean and std of **Φ_trans**, **Φ_tan**, and **Φ_rad^±** over each segment (6 features total).
 
 ## Layout
 
 ```
-src/sim/           # continuous ROA simulator + threat layer + IO
+src/sim/           # Couzin-zone simulator + IO
 src/features/      # order parameters, windows, dataset builders
 src/classify/      # train / eval
 configs/behaviors/ # frozen YAML parameter sets
@@ -56,7 +48,7 @@ pip install -r requirements.txt
 
 ## Generate simulations
 
-100 seeds × 6 behaviours × N∈{10,20,30,40,100,200} = 3600 clips. Seeds 0–79 train, 80–99 test.
+Generate sims × 5 behaviours × group sizes with train/test split.
 
 ```bash
 python scripts/generate_sims.py --n-jobs 8

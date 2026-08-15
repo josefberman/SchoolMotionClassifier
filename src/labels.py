@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-# Stable schooling regimes plus threat-response states (E+/E-).
+# Stable schooling regimes plus signed-radial states (E+/E-).
 STABLE_BEHAVIORS = (
     "traveling_polarized",
     "milling",
@@ -25,6 +25,7 @@ BEHAVIOR_SHORT = {
     "swarming": "swarming",
     "expansion_burst": "expansion",
     "compaction": "compaction",
+    "fountain_evasion": "fountain",
 }
 
 TRANSITIONS = tuple(

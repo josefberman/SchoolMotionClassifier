@@ -52,9 +52,9 @@ def metrics_for_validation(
     event_start: int | None = None,
     event_end: int | None = None,
 ) -> dict[str, float]:
-    """Compute validation metrics on the same frame range used for training features."""
+    """Compute validation metrics on phi_trans, phi_tan, and phi_rad_pm only."""
     pos, vel = positions, velocities
-    if behavior in ("expansion_burst", "compaction") and event_start is not None and event_end is not None:
+    if event_start is not None and event_end is not None:
         a = max(0, int(event_start))
         b = min(int(event_end), pos.shape[0])
         if b > a:
@@ -85,11 +85,6 @@ def validate_behavior(
             and b["phi_tan_min"] < phi_tan < b["phi_tan_max"]
             and abs(phi_rad) < b["phi_rad_abs_max"]
         )
-    if behavior == "fountain_evasion":
-        if positions is None or velocities is None:
-            return True
-        series = compute_order_params_series(positions, velocities)
-        return float(np.std(series["phi_trans"])) > 0.12 or float(np.std(series["phi_tan"])) > 0.15
     if behavior == "expansion_burst":
         b = _BOUNDS[behavior]
         return phi_rad > b["phi_rad_min"] and phi_tan < b["phi_tan_max"]

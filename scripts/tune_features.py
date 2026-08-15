@@ -50,7 +50,11 @@ def apply_best_to_yaml(best_path: Path | None = None, *, dry_run: bool = False) 
         path = CONFIG_DIR / f"{short}.yaml"
         with open(path, encoding="utf-8") as f:
             current = yaml.safe_load(f) or {}
+        ov = {k: v for k, v in ov.items() if k not in ("r_r", "r_o", "r_a")}
         merged = deep_merge(current, ov)
+        merged["r_r"] = 30.0
+        merged["r_o"] = 90.0
+        merged["r_a"] = 150.0
         updated.append(str(path))
         if not dry_run:
             with open(path, "w", encoding="utf-8") as f:

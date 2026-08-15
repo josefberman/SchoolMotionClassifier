@@ -1,32 +1,16 @@
 behavior: compaction
-w_r: 1.292989
-w_o: 2.471615
-w_a: 2.12081
-sigma_theta: 0.006407
-theta_init_std: 0.341776
-speed_spread: 0.146618
-sigma_speed: 0.02
-omega_max: 0.4
-s_cruise: 1.197455
-tau_s: 3.0
-a_max: 0.35
-r_repulse: 18.0
-r_orient: 40.0
-r_attract: 140.0
-d0: 38.0
+r_r: 30.0
+r_o: 90.0
+r_a: 150.0
+w_r: 2.361589
+w_o: 1.163256
+w_a: 1.191943
+w_tan: 0.072528
+w_rad: -0.603663
+sigma_theta: 0.047524
+s_0: 1.27579
+sigma_s: 0.05299
+omega_max: 0.099687
+a_max: 0.453858
 burn_in: 40
 record_frames: 150
-threat:
-  enabled: true
-  mode: compact
-  full_clip: true
-  radial_align: 3.011433
-  w_r_scale: 0.717842
-  w_o_scale: 1.115966
-  w_a_scale: 0.543031
-  speed_scale: 0.992962
-  predator_speed: 7.0
-  predator_radius: 175
-  compact_delta_d0: 19
-  compact_tau: 6
-  w_p: 0.3

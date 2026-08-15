@@ -11,6 +11,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "configs" / "behaviors"
 
+# Simulation-level defaults (not behavior class parameters).
 DEFAULTS: dict[str, Any] = {
     "fps": 30.0,
     # Frame-based integration: positions/velocities match real CSV units (px/frame).
@@ -22,52 +23,38 @@ DEFAULTS: dict[str, Any] = {
         "wall_margin": 40.0,
         "w_wall": 2.5,
     },
-    "body_length": 12.0,
-    "r_repulse": 18.0,
-    "r_orient": 55.0,
-    "r_attract": 120.0,
-    "d0": 28.0,
-    "w_r": 1.8,
+    "r_r": 30.0,
+    "r_o": 90.0,
+    "r_a": 150.0,
+    "w_r": 1.6,
     "w_o": 1.0,
     "w_a": 0.8,
-    "w_p": 0.0,
-    "sigma_theta": 0.15,
-    "theta_init_std": 0.25,
-    "speed_spread": 0.22,
-    "sigma_speed": 0.05,
+    "w_tan": 0.0,
+    "w_rad": 0.0,
+    "sigma_theta": 0.12,
+    "s_0": 1.5,
+    "sigma_s": 0.05,
     "omega_max": 0.45,
-    "tau_s": 3.0,
-    "a_max": 0.45,
-    "s_cruise": 1.5,
-    "s_min": 0.20,
-    "s_escape": 3.5,
-    "blind_half_deg": 30.0,
-    "max_neighbor_dist": 160.0,
-    "use_voronoi": True,
-    "burn_in": 45,
+    "a_max": 0.35,
+    "burn_in": 60,
     "record_frames": 150,
-    "circulation_bias": 0.0,  # +1 / -1 for bidirectional mill subpopulations
-    "w_circ": 0.0,
-    "cross_align_scale": 1.0,
-    "threat": {
-        "enabled": False,
-        "mode": None,  # fountain | startle | compact
-        "full_clip": True,
-        "start_frame": 0,
-        "duration": 150,
-        "predator_speed": 7.0,
-        "predator_radius": 80.0,
-        "flee_angle_deg": 35.0,
-        "w_p": 4.5,
-        "escape_duration": 45,
-        "compact_delta_d0": 12.0,
-        "compact_tau": 20.0,
-        "z_thr": 0.55,
-        "beta_p": 1.2,
-        "beta_n": 0.8,
-        "tau_z": 8.0,
-    },
 }
+
+BEHAVIOR_KEYS = (
+    "r_r",
+    "r_o",
+    "r_a",
+    "w_r",
+    "w_o",
+    "w_a",
+    "w_tan",
+    "w_rad",
+    "sigma_theta",
+    "s_0",
+    "sigma_s",
+    "omega_max",
+    "a_max",
+)
 
 
 def deep_merge(base: dict, override: dict) -> dict:
@@ -80,24 +67,18 @@ def deep_merge(base: dict, override: dict) -> dict:
     return out
 
 
+def validate_radii(cfg: dict[str, Any]) -> None:
+    r_r = float(cfg["r_r"])
+    r_o = float(cfg["r_o"])
+    r_a = float(cfg["r_a"])
+    if not (0.0 < r_r < r_o < r_a):
+        raise ValueError(f"Require 0 < r_r < r_o < r_a, got r_r={r_r}, r_o={r_o}, r_a={r_a}")
+
+
 def load_behavior_config(name: str) -> dict[str, Any]:
     path = CONFIG_DIR / f"{name}.yaml"
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
     cfg = deep_merge(DEFAULTS, data)
-    return sync_threat_to_record(cfg)
-
-
-def sync_threat_to_record(cfg: dict[str, Any]) -> dict[str, Any]:
-    """Keep threat behaviours active for the full recorded window."""
-    threat = cfg.get("threat")
-    if not threat or not threat.get("enabled"):
-        return cfg
-    if not threat.get("full_clip", True):
-        return cfg
-    rf = int(cfg["record_frames"])
-    threat["start_frame"] = 0
-    threat["duration"] = rf
-    if threat.get("mode") == "startle":
-        threat["escape_duration"] = rf
+    validate_radii(cfg)
     return cfg
