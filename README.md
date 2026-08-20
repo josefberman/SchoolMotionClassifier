@@ -20,7 +20,7 @@ Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a
 
 One model for all behaviors. Social interactions use exclusive Couzin zones (`d < r_r` repulsion, `r_r ≤ d < r_o` orientation, `r_o ≤ d < r_a` attraction). Heading noise `epsilon_w_i` and speed noise `epsilon_a_i` are sampled i.i.d. `Normal(0,1)` each step and are not YAML parameters. Arena, `dt`, `burn_in`, and `record_frames` are simulation metadata.
 
-Classifier inputs: mean and std of **Φ_trans**, **Φ_tan**, and **Φ_rad^±** over each segment (6 features total).
+Classifier inputs: segment means of **Φ_trans**, anisotropy-corrected **Ψ_tan**, and **Ψ_rad^±** (3 features).
 
 ## Layout
 
@@ -77,7 +77,7 @@ Outputs land in `sim_datasets/.../renders/` or `results/figures/<behavior>/`.
 
 ## Calibrate / inspect signatures
 
-Summarizes mean/std of the six segment features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
+Summarizes mean/std of the three segment features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
 
 ```bash
 python scripts/calibrate_baselines.py

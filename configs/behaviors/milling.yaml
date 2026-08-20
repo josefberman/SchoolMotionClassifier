@@ -2,16 +2,16 @@ behavior: milling
 r_r: 30.0
 r_o: 90.0
 r_a: 150.0
-w_r: 2.759747
-w_o: 1.230525
-w_a: 1.105919
-w_tan: 0.35391
-w_rad: 0.06667
-sigma_theta: 0.037251
-s_0: 1.141833
-sigma_s: 0.050557
-omega_max: 0.08566
-a_max: 0.12944
+w_r: 2.238387
+w_o: 0.954775
+w_a: 1.435837
+w_tan: 0.356346
+w_rad: 0.020973
+sigma_theta: 0.05356
+s_0: 1.058173
+sigma_s: 0.098604
+omega_max: 0.094667
+a_max: 0.406051
 burn_in: 80
 record_frames: 150
 arena:

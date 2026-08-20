@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.labels import BEHAVIOR_SHORT, CANONICAL
+from src.labels import BEHAVIOR_SHORT, CANONICAL, canonicalize
 from src.sim.config import CONFIG_DIR
 from src.tune.calibration import (
     behavior_calibration_loss,
@@ -25,6 +25,21 @@ from src.tune.calibration import (
     total_calibration_loss,
 )
 from src.tune.search_space import SEARCH_SPACE, round_overrides, sample_overrides
+
+
+def _canonical_behavior_map(d: dict[str, Any] | None) -> dict[str, Any]:
+    """Remap keys such as swarming → shoaling; drop unknown labels."""
+    out: dict[str, Any] = {}
+    for key, val in (d or {}).items():
+        try:
+            canon = canonicalize(str(key))
+        except ValueError:
+            continue
+        if canon not in CANONICAL:
+            continue
+        out[canon] = val
+    return out
+
 
 TUNING_DIR = ROOT / "results" / "tuning" / "feature_match"
 BEST_PATH = TUNING_DIR / "best.json"
@@ -114,8 +129,8 @@ def tune_behavior(
             print(
                 f"  trial {trial_idx + 1:3d}/{n_trials}  loss={loss:.4f}  "
                 f"phi_trans={sf['phi_trans_mean']['mean']:.3f}  "
-                f"phi_tan={sf['phi_tan_mean']['mean']:.3f}  "
-                f"phi_rad={sf['phi_rad_pm_mean']['mean']:+.3f}"
+                f"psi_tan={sf['psi_tan_mean']['mean']:.3f}  "
+                f"psi_rad={sf['psi_rad_pm_mean']['mean']:+.3f}"
             )
 
         if loss < best_loss:
@@ -156,7 +171,7 @@ def tune_all_behaviors(
     if BEST_PATH.exists():
         with open(BEST_PATH, encoding="utf-8") as f:
             prev = json.load(f)
-        merged_overrides.update(prev.get("behavior_overrides") or {})
+        merged_overrides.update(_canonical_behavior_map(prev.get("behavior_overrides")))
 
     per_behavior: dict[str, Any] = {}
 
@@ -190,6 +205,8 @@ def tune_all_behaviors(
 
     sim_report: dict[str, dict] = {}
     for behavior, ov in merged_overrides.items():
+        if behavior not in target_report:
+            continue
         sim_report.update(
             summarize_behavior_sims(
                 behavior,
@@ -204,7 +221,7 @@ def tune_all_behaviors(
     if BEST_PATH.exists():
         with open(BEST_PATH, encoding="utf-8") as f:
             prev = json.load(f)
-        prev_per_behavior = prev.get("per_behavior") or {}
+        prev_per_behavior = _canonical_behavior_map(prev.get("per_behavior"))
 
     summary = {
         "started_at": datetime.now(timezone.utc).isoformat(),

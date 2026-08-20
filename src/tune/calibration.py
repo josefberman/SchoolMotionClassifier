@@ -20,11 +20,8 @@ from src.sim.model_fast import run_simulation_fast
 # Primary order-parameter means drive most of the sim/real gap.
 FEATURE_WEIGHTS: dict[str, float] = {
     "phi_trans_mean": 2.0,
-    "phi_tan_mean": 2.0,
-    "phi_rad_pm_mean": 3.0,
-    "phi_trans_std": 1.0,
-    "phi_tan_std": 1.0,
-    "phi_rad_pm_std": 1.0,
+    "psi_tan_mean": 2.0,
+    "psi_rad_pm_mean": 3.0,
 }
 
 

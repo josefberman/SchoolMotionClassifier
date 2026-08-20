@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
-# Φ_trans, Φ_tan, Φ_rad^± — mean/std over a segment → 6 classifier inputs.
+# Φ_trans, Ψ_tan, Ψ_rad^± — segment means are the classifier inputs.
 FEATURE_NAMES = (
     "phi_trans",
-    "phi_tan",
-    "phi_rad_pm",
+    "psi_tan",
+    "psi_rad_pm",
 )
 
 
@@ -33,7 +33,17 @@ def compute_order_params_series(
     positions: np.ndarray,
     velocities: np.ndarray,
 ) -> dict[str, np.ndarray]:
-    """Vectorized over time. positions, velocities: (T, N, 2)."""
+    """Vectorized over time. positions, velocities: (T, N, 2).
+
+    Φ_trans = ||⟨v̂_i⟩||
+
+    Center unit headings and radial vectors:
+        v'_i = v̂_i − v̄ ,  r'_i = r̂_i − r̄
+        D = sqrt( (∑_i ||v'_i||²) (∑_i ||r'_i||²) )
+
+    Ψ_rad^± = (∑_i v'_i · r'_i) / D
+    Ψ_tan   = |∑_i (r'_i × v'_i)_z| / D
+    """
     pos = np.asarray(positions, dtype=np.float64)
     vel = np.asarray(velocities, dtype=np.float64)
     if pos.ndim == 2:
@@ -57,17 +67,23 @@ def compute_order_params_series(
     r_hat[..., 0] = np.where(safe, r[..., 0] / np.maximum(r_norm, 1e-12), 0.0)
     r_hat[..., 1] = np.where(safe, r[..., 1] / np.maximum(r_norm, 1e-12), 0.0)
 
-    # Tangential order: ⟨|(r̂_i × v̂_i)_z|⟩
-    cross_z = r_hat[..., 0] * hat_v[..., 1] - r_hat[..., 1] * hat_v[..., 0]
-    phi_tan = np.mean(np.abs(cross_z), axis=1)
+    v_p = hat_v - hat_v.mean(axis=1, keepdims=True)
+    r_p = r_hat - r_hat.mean(axis=1, keepdims=True)
+    sum_v2 = np.sum(v_p[..., 0] ** 2 + v_p[..., 1] ** 2, axis=1)
+    sum_r2 = np.sum(r_p[..., 0] ** 2 + r_p[..., 1] ** 2, axis=1)
+    denom = np.sqrt(sum_v2 * sum_r2)
 
-    # Signed radial order: ⟨r̂_i · v̂_i⟩
-    phi_rad_pm = np.mean(np.sum(r_hat * hat_v, axis=-1), axis=1)
+    psi_rad_pm = np.zeros(t)
+    np.divide(np.sum(v_p * r_p, axis=(1, 2)), denom, out=psi_rad_pm, where=denom > 1e-12)
+
+    cross_z = r_p[..., 0] * v_p[..., 1] - r_p[..., 1] * v_p[..., 0]
+    psi_tan = np.zeros(t)
+    np.divide(np.abs(np.sum(cross_z, axis=1)), denom, out=psi_tan, where=denom > 1e-12)
 
     return {
         "phi_trans": phi_trans,
-        "phi_tan": phi_tan,
-        "phi_rad_pm": phi_rad_pm,
+        "psi_tan": psi_tan,
+        "psi_rad_pm": psi_rad_pm,
     }
 
 
@@ -83,4 +99,4 @@ def aggregate_series(
     return feat
 
 
-AGG_FEATURE_NAMES = [f"{k}_{s}" for k in FEATURE_NAMES for s in ("mean", "std")]
+AGG_FEATURE_NAMES = [f"{k}_mean" for k in FEATURE_NAMES]

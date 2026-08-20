@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 import yaml
 
-from src.labels import BEHAVIOR_SHORT
+from src.labels import BEHAVIOR_SHORT, canonicalize
 from src.features.order_params import AGG_FEATURE_NAMES
 from src.sim.config import CONFIG_DIR, deep_merge
 from src.tune.feature_match import BEST_PATH, tune_all_behaviors
@@ -23,7 +23,9 @@ def _print_feature_summary(summary: dict) -> None:
     print("=== feature-match summary ===")
     print(f"total_loss={summary['total_loss']:.4f}")
     for behavior, block in summary["sim_features"].items():
-        tgt = summary["target_features"][behavior]
+        tgt = summary["target_features"].get(behavior)
+        if tgt is None:
+            continue
         print(f"\n{behavior}:")
         for feat in AGG_FEATURE_NAMES:
             sm = block[feat]["mean"]
@@ -46,7 +48,13 @@ def apply_best_to_yaml(best_path: Path | None = None, *, dry_run: bool = False) 
     overrides = best.get("behavior_overrides") or {}
     updated = []
     for behavior, ov in overrides.items():
-        short = BEHAVIOR_SHORT[behavior]
+        try:
+            behavior = canonicalize(behavior)
+        except ValueError:
+            continue
+        short = BEHAVIOR_SHORT.get(behavior)
+        if not short:
+            continue
         path = CONFIG_DIR / f"{short}.yaml"
         with open(path, encoding="utf-8") as f:
             current = yaml.safe_load(f) or {}
