@@ -17,7 +17,7 @@ _BOUNDS: dict[str, dict[str, float]] = {
         "phi_tan_min": 0.65,
         "phi_trans_max": 0.61,
     },
-    "swarming": {
+    "shoaling": {
         "phi_trans_max": 0.72,
         "phi_tan_min": 0.58,
         "phi_tan_max": 0.74,
@@ -78,7 +78,7 @@ def validate_behavior(
     if behavior == "milling":
         b = _BOUNDS[behavior]
         return phi_tan > b["phi_tan_min"] and phi_trans < b["phi_trans_max"]
-    if behavior == "swarming":
+    if behavior == "shoaling":
         b = _BOUNDS[behavior]
         return (
             phi_trans < b["phi_trans_max"]

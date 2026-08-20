@@ -63,7 +63,7 @@ class FastSchoolSimulator:
             self.theta = theta_0 + noise
         elif behavior == "milling":
             self.theta = theta_rad + self.c_mill * (np.pi / 2.0) + noise
-        elif behavior == "swarming":
+        elif behavior == "shoaling":
             self.theta = self.rng.uniform(0.0, 2.0 * np.pi, self.n)
         elif behavior == "expansion_burst":
             self.theta = theta_rad + noise

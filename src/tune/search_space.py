@@ -34,7 +34,7 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "omega_max": (0.0, 0.1),
         "a_max": (0.0, 0.5),
     },
-    "swarming": {
+    "shoaling": {
         "w_r": (2.0, 3.0),
         "w_o": (0.5, 1.5),
         "w_a": (0.5, 1.5),

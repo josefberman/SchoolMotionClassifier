@@ -10,7 +10,7 @@ Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a
 | --------------------- | ---------- | -------------------------------------------------- |
 | `traveling_polarized` | tpol       | High `w_o`, low `sigma_theta`; net translation     |
 | `milling`             | milling    | `w_tan > 0`; rotation about the school centroid |
-| `swarming`            | swarming   | Weak `w_o`, larger `sigma_theta`; low polarization |
+| `shoaling`            | shoaling   | Weak `w_o`, larger `sigma_theta`; low polarization |
 | `expansion_burst`     | expansion  | `w_rad > 0`; outward radial tendency           |
 | `compaction`          | compaction | `w_rad < 0`; inward radial tendency            |
 
@@ -94,7 +94,7 @@ python scripts/calibrate_baselines.py --source both
 python scripts/train_classifier.py
 python scripts/eval_real.py
 
-# Stable states only (tpol, milling, swarming) — no transition labels
+# Stable states only (tpol, milling, shoaling) — no transition labels
 python scripts/train_classifier.py --stable-only
 python scripts/eval_real.py --stable-only
 ```

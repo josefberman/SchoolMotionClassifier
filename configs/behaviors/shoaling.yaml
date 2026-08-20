@@ -1,4 +1,4 @@
-behavior: swarming
+behavior: shoaling
 r_r: 30.0
 r_o: 90.0
 r_a: 150.0

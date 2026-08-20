@@ -43,7 +43,7 @@ def _event_window(behavior: str, n_frames: int = 150) -> tuple[int | None, int |
 _LABEL_RAW = {
     "traveling_polarized": "polarized",
     "milling": "milling",
-    "swarming": "swarming",
+    "shoaling": "shoaling",
     "expansion_burst": "e+",
     "compaction": "e-",
 }

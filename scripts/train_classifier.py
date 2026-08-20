@@ -26,7 +26,7 @@ def main() -> None:
         "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Train on baseline clips only (tpol, milling, swarming, e+, e−); exclude transitions",
+        help="Train on baseline clips only (tpol, milling, shoaling, e+, e−); exclude transitions",
     )
     parser.add_argument(
         "--manifest",

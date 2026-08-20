@@ -86,7 +86,7 @@
       }
     }
   },
-  "swarming": {
+  "shoaling": {
     "n_segments": 40,
     "features": {
       "phi_trans_mean": {

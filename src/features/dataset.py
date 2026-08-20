@@ -51,7 +51,7 @@ def features_from_sim_entry(
         csv_path = sim_root / csv_path
     pos, vel = load_trajectory_csv(csv_path)
     fps = float(entry.get("fps", 30.0))
-    label = entry["behavior"]
+    label = canonicalize(entry["behavior"])
 
     if entry.get("morph_start") is not None:
         a, b = _transition_morph_range(entry, pos.shape[0])
@@ -85,9 +85,19 @@ def build_sim_xy(
     sim_root = sim_root or manifest_path.parent
     entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
     allowed = set(label_set(include_transitions=include_transitions, stable_only=stable_only))
-    entries = [e for e in entries if e.get("behavior") in allowed]
-    if not include_transitions:
-        entries = [e for e in entries if not is_transition(e.get("behavior", ""))]
+    kept = []
+    for e in entries:
+        try:
+            lab = canonicalize(e.get("behavior", ""))
+        except ValueError:
+            continue
+        if lab not in allowed:
+            continue
+        if not include_transitions and is_transition(lab):
+            continue
+        e = {**e, "behavior": lab}
+        kept.append(e)
+    entries = kept
     xs, ys = [], []
     for e in entries:
         for x, y in features_from_sim_entry(e, mode=mode, sim_root=sim_root):

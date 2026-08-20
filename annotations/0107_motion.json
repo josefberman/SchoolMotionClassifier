@@ -46,7 +46,7 @@
     {
       "start": "04:40",
       "end": "05:31",
-      "label": "swarming"
+      "label": "shoaling"
     },
     {
       "start": "05:31",
@@ -56,7 +56,7 @@
     {
       "start": "05:40",
       "end": "05:51",
-      "label": "swarming"
+      "label": "shoaling"
     },
     {
       "start": "05:51",
@@ -151,7 +151,7 @@
     {
       "start": "10:17",
       "end": "10:40",
-      "label": "swarming"
+      "label": "shoaling"
     },
     {
       "start": "10:40",
@@ -196,7 +196,7 @@
     {
       "start": "13:18",
       "end": "13:40",
-      "label": "swarming"
+      "label": "shoaling"
     }
   ]
 }

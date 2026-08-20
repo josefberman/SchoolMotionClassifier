@@ -33,12 +33,12 @@ isProject: false
 - **Scope:** full pipeline — simulator, dataset generation, features, classifier, train/eval
 - **Locomotion:** continuous bounded acceleration (not burst-and-coast)
 - **Volume:** 100 simulations per class, for each \(N \in \{10,20,30,40,100,200\}\) → **3600** trajectories
-- **Classes (canonical):** `traveling_polarized`, `milling`, `swarming`, `fountain_evasion`, `expansion_burst`, `compaction` (aliases via existing [`annotations/_label_aliases.json`](annotations/_label_aliases.json); add `compaction` / `spread`→`expansion_burst`)
+- **Classes (canonical):** `traveling_polarized`, `milling`, `shoaling`, `fountain_evasion`, `expansion_burst`, `compaction` (aliases via existing [`annotations/_label_aliases.json`](annotations/_label_aliases.json); add `compaction` / `spread`→`expansion_burst`)
 
 ## Existing assets to reuse
 
 - Real trajectories: [`schooling-datasets/{10,30,70,150}_fish/*/_*_loc_vel_data.csv`](schooling-datasets/) — columns `frame,fish{i}_x,fish{i}_y,fish{i}_vx,fish{i}_vy`, ~30 fps
-- Segment labels: [`annotations/*_motion.json`](annotations/) — `mm:ss` segments; real label counts are skewed (polarized≫milling≫swarming; fountain/burst rare; **no compaction**)
+- Segment labels: [`annotations/*_motion.json`](annotations/) — `mm:ss` segments; real label counts are skewed (polarized≫milling≫shoaling; fountain/burst rare; **no compaction**)
 - Meta: [`annotations/datasets.json`](annotations/datasets.json) (`fps`, fish group)
 
 Sim outputs must match the real CSV schema so the same feature code runs on both.
@@ -143,7 +143,7 @@ Real segments: load CSV + [`annotations/*_motion.json`](annotations/), map alias
 src/sim/{model,neighbors,threat,metrics,io}.py
 src/features/{order_params,windows,dataset}.py  # order_params = Φdir, L̄, Φrot, Φtan, v̄r, σd
 src/classify/{train,eval}.py
-configs/behaviors/{tpol,milling,swarming,fountain,expansion,compaction}.yaml
+configs/behaviors/{tpol,milling,shoaling,fountain,expansion,compaction}.yaml
 scripts/{generate_sims,calibrate_baselines,train_classifier,eval_real}.py
 sim_datasets/   # generated
 results/

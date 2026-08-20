@@ -9,7 +9,7 @@ from pathlib import Path
 STABLE_BEHAVIORS = (
     "traveling_polarized",
     "milling",
-    "swarming",
+    "shoaling",
 )
 
 THREAT_BEHAVIORS = (
@@ -22,7 +22,7 @@ CANONICAL = STABLE_BEHAVIORS + THREAT_BEHAVIORS
 BEHAVIOR_SHORT = {
     "traveling_polarized": "tpol",
     "milling": "milling",
-    "swarming": "swarming",
+    "shoaling": "shoaling",
     "expansion_burst": "expansion",
     "compaction": "compaction",
     "fountain_evasion": "fountain",
@@ -72,7 +72,7 @@ def load_aliases(path: Path | None = None) -> dict[str, str]:
 _SHORT_TO_CANONICAL = {v: k for k, v in BEHAVIOR_SHORT.items()}
 _SHORT_TO_CANONICAL.update({
     "polarized": "traveling_polarized",
-    "shoaling": "swarming",
+    "swarming": "shoaling",
 })
 
 
