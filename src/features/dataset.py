@@ -74,7 +74,7 @@ def manifest_has_transitions(manifest_path: Path | None = None) -> bool:
 
 
 def build_sim_xy(
-    split: str = "train",
+    split: str | None = None,
     manifest_path: Path | None = None,
     sim_root: Path | None = None,
     mode: str = "segment",
@@ -83,7 +83,9 @@ def build_sim_xy(
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     manifest_path = manifest_path or (ROOT / "sim_datasets" / "manifest.json")
     sim_root = sim_root or manifest_path.parent
-    entries = [e for e in load_manifest(manifest_path) if e.get("split") == split and e.get("valid", True)]
+    entries = [e for e in load_manifest(manifest_path) if e.get("valid", True)]
+    if split is not None:
+        entries = [e for e in entries if e.get("split") == split]
     allowed = set(label_set(include_transitions=include_transitions, stable_only=stable_only))
     kept = []
     for e in entries:

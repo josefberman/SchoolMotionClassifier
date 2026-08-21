@@ -7,7 +7,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, f1_score, make_scorer
+from sklearn.metrics import f1_score, make_scorer
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
@@ -51,32 +51,24 @@ def train_classifier(
     if include_transitions is None:
         include_transitions = manifest_has_transitions(manifest_path) and not stable_only
 
-    X_train, y_train, feat_names = build_sim_xy(
-        split="train",
+    X_sim, y_sim, feat_names = build_sim_xy(
+        split=None,
         manifest_path=manifest_path,
         sim_root=sim_root,
         mode=mode,
         include_transitions=include_transitions,
         stable_only=stable_only,
     )
-    X_test, y_test, _ = build_sim_xy(
-        split="test",
-        manifest_path=manifest_path,
-        sim_root=sim_root,
-        mode=mode,
-        include_transitions=include_transitions,
-        stable_only=stable_only,
-    )
-    if len(X_train) == 0:
+    if len(X_sim) == 0:
         raise RuntimeError("No training samples — run generate_sims.py first")
 
     classes = label_set(include_transitions=include_transitions, stable_only=stable_only)
-    present_labels = set(y_train) | set(y_test)
+    present_labels = set(y_sim)
     eval_labels = ordered_labels(lab for lab in classes if lab in present_labels)
 
     le = LabelEncoder()
     le.fit(list(classes))
-    yt = le.transform(y_train)
+    yt = le.transform(y_sim)
 
     X_real, y_real, _, _ = build_real_xy(
         include_transitions=include_transitions,
@@ -88,13 +80,13 @@ def train_classifier(
     if len(X_real) == 0:
         raise RuntimeError("No real segments for hyperparameter scoring")
 
-    X_search = np.vstack([X_train, X_real])
+    X_search = np.vstack([X_sim, X_real])
     y_search = np.concatenate([yt, le.transform(y_real)])
-    split = PredefinedSplit(np.r_[np.full(len(X_train), -1), np.zeros(len(X_real), dtype=int)])
+    split = PredefinedSplit(np.r_[np.full(len(X_sim), -1), np.zeros(len(X_real), dtype=int)])
 
     n_candidates = int(np.prod([len(v) for v in PARAM_GRID.values()]))
     print(
-        f"sim_train={len(X_train)}  sim_test={len(X_test)}  real={len(X_real)}  "
+        f"sim={len(X_sim)}  real={len(X_real)}  "
         f"classes={len(eval_labels)}  grid={n_candidates} configs (score=real macro-F1)"
     )
     print("param grid:", PARAM_GRID)
@@ -110,59 +102,20 @@ def train_classifier(
     )
     search.fit(X_search, y_search)
     model = XGBClassifier(**search.best_params_, random_state=42, n_jobs=-1)
-    model.fit(X_train, yt)
+    model.fit(X_sim, yt)
     print(f"best_params={search.best_params_}  real_macro_f1={search.best_score_:.4f}")
 
     report: dict = {
-        "n_train": int(len(X_train)),
-        "n_test": int(len(X_test)),
+        "n_train": int(len(X_sim)),
         "include_transitions": include_transitions,
         "stable_only": stable_only,
         "n_classes": len(eval_labels),
-        "train_counts": _count_by_kind(y_train),
+        "train_counts": _count_by_kind(y_sim),
         "n_real": int(len(X_real)),
         "features": feat_names,
         "best_params": search.best_params_,
         "best_real_macro_f1": float(search.best_score_),
     }
-    if len(X_test):
-        pred = le.inverse_transform(model.predict(X_test))
-        report["test_counts"] = _count_by_kind(y_test)
-        report["sim_test_accuracy"] = float(np.mean(pred == y_test))
-        report["sim_test_macro_f1"] = float(
-            f1_score(y_test, pred, average="macro", labels=eval_labels, zero_division=0)
-        )
-        report["classification_report"] = classification_report(
-            y_test, pred, labels=eval_labels, zero_division=0, output_dict=True
-        )
-        cm = confusion_matrix(y_test, pred, labels=eval_labels)
-        report["confusion_matrix"] = cm.tolist()
-        report["confusion_labels"] = eval_labels
-
-        base_mask = np.array([not is_transition(y) for y in y_test])
-        trans_mask = np.array([is_transition(y) for y in y_test])
-        if base_mask.any():
-            report["sim_test_baseline_accuracy"] = float(np.mean(pred[base_mask] == y_test[base_mask]))
-            report["sim_test_baseline_macro_f1"] = float(
-                f1_score(
-                    y_test[base_mask],
-                    pred[base_mask],
-                    average="macro",
-                    labels=[lab for lab in eval_labels if not is_transition(lab)],
-                    zero_division=0,
-                )
-            )
-        if trans_mask.any():
-            report["sim_test_transition_accuracy"] = float(np.mean(pred[trans_mask] == y_test[trans_mask]))
-            report["sim_test_transition_macro_f1"] = float(
-                f1_score(
-                    y_test[trans_mask],
-                    pred[trans_mask],
-                    average="macro",
-                    labels=[lab for lab in eval_labels if is_transition(lab)],
-                    zero_division=0,
-                )
-            )
 
     model_path = out_dir / "classifier.joblib"
     metrics_path = out_dir / "sim_test_metrics.json"
@@ -181,9 +134,4 @@ def train_classifier(
     print(f"wrote {model_path}")
     print(f"wrote {metrics_path}")
     print(f"real_macro_f1={report['best_real_macro_f1']:.3f}")
-    if "sim_test_accuracy" in report:
-        print(
-            f"sim_test_accuracy={report['sim_test_accuracy']:.3f}  "
-            f"macro_f1={report['sim_test_macro_f1']:.3f}"
-        )
     return report

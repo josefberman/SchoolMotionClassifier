@@ -59,16 +59,7 @@ def main() -> None:
     )
     summary = {k: report[k] for k in report if k != "classification_report"}
     print(json.dumps(summary, indent=2))
-    if "sim_test_accuracy" in report:
-        print(
-            f"sim_test_accuracy={report['sim_test_accuracy']:.3f} "
-            f"macro_f1={report['sim_test_macro_f1']:.3f}"
-        )
-        if report.get("include_transitions"):
-            if "sim_test_baseline_macro_f1" in report:
-                print(f"sim_baseline_macro_f1={report['sim_test_baseline_macro_f1']:.3f}")
-            if "sim_test_transition_macro_f1" in report:
-                print(f"sim_transition_macro_f1={report['sim_test_transition_macro_f1']:.3f}")
+    print(f"real_macro_f1={report['best_real_macro_f1']:.3f}")
 
 
 if __name__ == "__main__":
