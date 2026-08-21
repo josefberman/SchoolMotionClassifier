@@ -62,6 +62,14 @@ _ROOT = Path(__file__).resolve().parents[1]
 _ALIAS_PATH = _ROOT / "annotations" / "_label_aliases.json"
 
 
+def ordered_labels(present) -> list[str]:
+    """Canonical class order, then leftover labels (not alphabetical)."""
+    present_set = set(present)
+    ordered = [lab for lab in ALL_LABELS if lab in present_set]
+    leftover = sorted(present_set - set(ordered))
+    return ordered + leftover
+
+
 def load_aliases(path: Path | None = None) -> dict[str, str]:
     p = path or _ALIAS_PATH
     with open(p, encoding="utf-8") as f:

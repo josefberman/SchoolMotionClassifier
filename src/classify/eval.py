@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 
 from src.features.dataset import build_real_xy
-from src.labels import is_transition
+from src.labels import is_transition, ordered_labels
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,13 +47,13 @@ def eval_real(
     known_mask = np.array([yi in known for yi in y_all])
     X, y = X_all[known_mask], y_all[known_mask]
 
-    present_labels = sorted(set(y))
+    eval_labels = ordered_labels(set(y))
     report: dict = {
         "n_real": int(len(y)),
         "include_transitions": include_transitions,
         "stable_only": stable_only,
         "n_classes_in_model": int(len(le.classes_)),
-        "label_counts": {lab: int(np.sum(y == lab)) for lab in present_labels},
+        "label_counts": {lab: int(np.sum(y == lab)) for lab in eval_labels},
         "segment_counts": _count_by_kind(y),
         "n_skipped_unknown_label": int(np.sum(~known_mask)),
     }
@@ -65,18 +65,18 @@ def eval_real(
     pred = le.inverse_transform(model.predict(X))
     report["accuracy"] = float(np.mean(pred == y))
     report["macro_f1"] = float(
-        f1_score(y, pred, average="macro", labels=present_labels, zero_division=0)
+        f1_score(y, pred, average="macro", labels=eval_labels, zero_division=0)
     )
     report["classification_report"] = classification_report(
-        y, pred, labels=present_labels, zero_division=0, output_dict=True
+        y, pred, labels=eval_labels, zero_division=0, output_dict=True
     )
-    report["confusion_matrix"] = confusion_matrix(y, pred, labels=present_labels).tolist()
-    report["confusion_labels"] = present_labels
+    report["confusion_matrix"] = confusion_matrix(y, pred, labels=eval_labels).tolist()
+    report["confusion_labels"] = eval_labels
 
     base_mask = np.array([not is_transition(yi) for yi in y])
     trans_mask = np.array([is_transition(yi) for yi in y])
     if base_mask.any():
-        base_labels = sorted({yi for yi in y[base_mask]})
+        base_labels = ordered_labels({yi for yi in y[base_mask]})
         report["baseline_accuracy"] = float(np.mean(pred[base_mask] == y[base_mask]))
         report["baseline_macro_f1"] = float(
             f1_score(
@@ -88,7 +88,7 @@ def eval_real(
             )
         )
     if trans_mask.any():
-        trans_labels = sorted({yi for yi in y[trans_mask]})
+        trans_labels = ordered_labels({yi for yi in y[trans_mask]})
         report["transition_accuracy"] = float(np.mean(pred[trans_mask] == y[trans_mask]))
         report["transition_macro_f1"] = float(
             f1_score(

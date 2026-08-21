@@ -1,232 +1,217 @@
 {
   "dataset": "0115",
   "fps": 29.97,
-  "source": "manual video review \u2014 partial coverage",
+  "source": "trajectory-assisted annotation",
   "segments": [
     {
       "start": "00:00",
+      "end": "00:08",
+      "label": "polarized"
+    },
+    {
+      "start": "00:16",
+      "end": "00:41",
+      "label": "polarized"
+    },
+    {
+      "start": "00:49",
       "end": "01:08",
       "label": "polarized"
     },
     {
-      "start": "01:16",
+      "start": "01:35",
       "end": "01:40",
       "label": "polarized"
     },
     {
-      "start": "01:49",
-      "end": "02:03",
-      "label": "polarized"
-    },
-    {
-      "start": "02:03",
-      "end": "02:07",
-      "label": "tpol_to_s"
-    },
-    {
-      "start": "02:07",
-      "end": "02:14",
+      "start": "01:44.5",
+      "end": "01:48.5",
       "label": "shoaling"
     },
     {
-      "start": "02:14",
-      "end": "02:18",
-      "label": "s_to_tpol"
+      "start": "01:57",
+      "end": "02:02",
+      "label": "polarized"
     },
     {
-      "start": "02:18",
+      "start": "02:10.5",
+      "end": "02:13.3",
+      "label": "shoaling"
+    },
+    {
+      "start": "02:20.5",
+      "end": "02:28.5",
+      "label": "polarized"
+    },
+    {
+      "start": "02:34",
       "end": "02:37",
       "label": "polarized"
     },
     {
-      "start": "02:37",
-      "end": "02:40",
-      "label": "tpol_to_m"
-    },
-    {
-      "start": "02:40",
+      "start": "02:40.5",
       "end": "02:46",
       "label": "milling"
     },
     {
-      "start": "02:46",
-      "end": "02:50",
-      "label": "m_to_tpol"
-    },
-    {
-      "start": "02:50",
-      "end": "02:53",
+      "start": "03:06.5",
+      "end": "03:12",
       "label": "polarized"
     },
     {
-      "start": "03:01",
-      "end": "04:32",
+      "start": "03:17",
+      "end": "03:26.5",
       "label": "polarized"
     },
     {
-      "start": "04:32",
-      "end": "04:35",
-      "label": "tpol_to_m"
+      "start": "03:44.5",
+      "end": "03:48",
+      "label": "polarized"
     },
     {
-      "start": "04:35",
+      "start": "03:53",
+      "end": "03:56.5",
+      "label": "polarized"
+    },
+    {
+      "start": "04:00",
+      "end": "04:05.5",
+      "label": "polarized"
+    },
+    {
+      "start": "04:08",
+      "end": "04:28.5",
+      "label": "polarized"
+    },
+    {
+      "start": "04:40",
       "end": "04:53",
       "label": "milling"
     },
     {
-      "start": "04:53",
-      "end": "04:57",
-      "label": "m_to_tpol"
-    },
-    {
       "start": "04:57",
-      "end": "05:38",
+      "end": "05:09",
       "label": "polarized"
     },
     {
-      "start": "05:42",
-      "end": "05:48",
+      "start": "05:15.5",
+      "end": "05:22",
       "label": "polarized"
     },
     {
-      "start": "05:57",
-      "end": "06:50",
+      "start": "05:25.5",
+      "end": "05:36",
       "label": "polarized"
     },
     {
-      "start": "06:50",
-      "end": "07:04",
-      "label": "tpol_to_m"
+      "start": "06:02",
+      "end": "06:49",
+      "label": "polarized"
     },
     {
       "start": "07:04",
-      "end": "07:20",
+      "end": "07:07",
       "label": "milling"
     },
     {
-      "start": "07:20",
-      "end": "07:27",
-      "label": "m_to_tpol"
+      "start": "07:11",
+      "end": "07:16.5",
+      "label": "milling"
     },
     {
       "start": "07:27",
-      "end": "07:44",
+      "end": "07:34.5",
       "label": "polarized"
     },
     {
-      "start": "07:49",
-      "end": "08:03",
+      "start": "07:51.5",
+      "end": "08:02.5",
       "label": "polarized"
     },
     {
-      "start": "08:03",
-      "end": "08:06",
-      "label": "tpol_to_s"
-    },
-    {
-      "start": "08:06",
-      "end": "08:20",
+      "start": "08:08",
+      "end": "08:19.5",
       "label": "shoaling"
     },
     {
-      "start": "08:20",
-      "end": "08:23",
-      "label": "s_to_m"
-    },
-    {
       "start": "08:23",
-      "end": "08:31",
+      "end": "08:29.5",
       "label": "milling"
     },
     {
-      "start": "08:31",
-      "end": "08:36",
-      "label": "m_to_tpol"
-    },
-    {
-      "start": "08:36",
-      "end": "08:43",
+      "start": "08:54",
+      "end": "08:59.5",
       "label": "polarized"
     },
     {
-      "start": "08:47",
-      "end": "09:17",
+      "start": "09:04",
+      "end": "09:16",
       "label": "polarized"
     },
     {
-      "start": "09:33",
+      "start": "09:38.5",
       "end": "09:47",
       "label": "polarized"
     },
     {
-      "start": "09:47",
-      "end": "09:49",
-      "label": "tpol_to_s"
-    },
-    {
       "start": "09:49",
-      "end": "09:56",
+      "end": "09:53.5",
       "label": "shoaling"
     },
     {
-      "start": "09:56",
-      "end": "10:01",
-      "label": "s_to_tpol"
-    },
-    {
-      "start": "10:01",
-      "end": "10:20",
+      "start": "10:01.5",
+      "end": "10:12.5",
       "label": "polarized"
     },
     {
-      "start": "10:30",
+      "start": "10:13.5",
+      "end": "10:18.5",
+      "label": "polarized"
+    },
+    {
+      "start": "10:50",
+      "end": "10:58",
+      "label": "polarized"
+    },
+    {
+      "start": "11:04",
+      "end": "11:09",
+      "label": "polarized"
+    },
+    {
+      "start": "11:14",
       "end": "11:25",
       "label": "polarized"
     },
     {
-      "start": "11:33",
+      "start": "11:36.5",
       "end": "11:49",
       "label": "polarized"
     },
     {
-      "start": "11:49",
-      "end": "11:53",
-      "label": "tpol_to_m"
-    },
-    {
-      "start": "11:53",
-      "end": "12:04",
-      "label": "milling"
-    },
-    {
-      "start": "12:04",
-      "end": "12:07",
-      "label": "m_to_tpol"
-    },
-    {
       "start": "12:07",
-      "end": "12:26",
+      "end": "12:10",
       "label": "polarized"
     },
     {
-      "start": "12:29",
-      "end": "13:10",
+      "start": "12:13",
+      "end": "12:25.5",
       "label": "polarized"
     },
     {
-      "start": "13:10",
-      "end": "13:14",
-      "label": "tpol_to_m"
+      "start": "12:36",
+      "end": "13:02",
+      "label": "polarized"
     },
     {
-      "start": "13:14",
-      "end": "13:38",
+      "start": "13:04",
+      "end": "13:08",
+      "label": "polarized"
+    },
+    {
+      "start": "13:20.5",
+      "end": "13:35",
       "label": "milling"
-    },
-    {
-      "start": "13:38",
-      "end": "13:40",
-      "label": "m_to_tpol"
     }
   ]
 }

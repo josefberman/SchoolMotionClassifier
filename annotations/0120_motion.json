@@ -1,7 +1,7 @@
 {
   "dataset": "0120",
   "fps": 29.97,
-  "source": "manual video review \u2014 partial coverage",
+  "source": "trajectory-assisted annotation",
   "segments": [
     {
       "start": "00:06",
@@ -14,19 +14,14 @@
       "label": "polarized"
     },
     {
-      "start": "00:49",
-      "end": "00:52",
-      "label": "tpol_to_s"
-    },
-    {
       "start": "00:52",
-      "end": "01:08",
+      "end": "00:55.5",
       "label": "shoaling"
     },
     {
-      "start": "01:08",
-      "end": "01:10",
-      "label": "s_to_tpol"
+      "start": "01:01.8",
+      "end": "01:06",
+      "label": "shoaling"
     },
     {
       "start": "01:10",
@@ -39,19 +34,9 @@
       "label": "polarized"
     },
     {
-      "start": "02:03",
-      "end": "02:05",
-      "label": "tpol_to_m"
-    },
-    {
       "start": "02:05",
       "end": "02:12",
       "label": "milling"
-    },
-    {
-      "start": "02:12",
-      "end": "02:19",
-      "label": "m_to_tpol"
     },
     {
       "start": "02:19",
@@ -64,19 +49,9 @@
       "label": "polarized"
     },
     {
-      "start": "02:56",
-      "end": "03:00",
-      "label": "tpol_to_s"
-    },
-    {
-      "start": "03:00",
-      "end": "03:09",
+      "start": "03:04.3",
+      "end": "03:06.5",
       "label": "shoaling"
-    },
-    {
-      "start": "03:09",
-      "end": "03:12",
-      "label": "s_to_tpol"
     },
     {
       "start": "03:12",
@@ -84,19 +59,9 @@
       "label": "polarized"
     },
     {
-      "start": "03:38",
-      "end": "03:40",
-      "label": "tpol_to_m"
-    },
-    {
       "start": "03:40",
       "end": "03:52",
       "label": "milling"
-    },
-    {
-      "start": "03:52",
-      "end": "03:57",
-      "label": "m_to_tpol"
     },
     {
       "start": "03:57",
@@ -114,24 +79,9 @@
       "label": "polarized"
     },
     {
-      "start": "05:14",
-      "end": "05:16",
-      "label": "tpol_to_m"
-    },
-    {
-      "start": "05:16",
-      "end": "05:21",
+      "start": "05:18",
+      "end": "05:20",
       "label": "milling"
-    },
-    {
-      "start": "05:21",
-      "end": "05:26.5",
-      "label": "e+"
-    },
-    {
-      "start": "05:28",
-      "end": "05:34",
-      "label": "e-"
     },
     {
       "start": "05:34",
@@ -139,69 +89,29 @@
       "label": "polarized"
     },
     {
-      "start": "06:08",
-      "end": "06:18",
-      "label": "tpol_to_m"
-    },
-    {
       "start": "06:18",
-      "end": "06:33",
+      "end": "06:20",
       "label": "milling"
     },
     {
-      "start": "06:33",
-      "end": "06:43",
-      "label": "m_to_s"
+      "start": "06:22.7",
+      "end": "06:28.3",
+      "label": "milling"
     },
     {
-      "start": "06:43",
-      "end": "06:48",
-      "label": "shoaling"
-    },
-    {
-      "start": "06:48",
-      "end": "06:56",
-      "label": "s_to_tpol"
-    },
-    {
-      "start": "06:56",
-      "end": "07:15",
-      "label": "polarized"
-    },
-    {
-      "start": "07:15",
-      "end": "07:19",
-      "label": "tpol_to_m"
-    },
-    {
-      "start": "07:19",
+      "start": "07:25.8",
       "end": "07:33",
       "label": "milling"
     },
     {
-      "start": "07:33",
-      "end": "07:37",
-      "label": "m_to_tpol"
-    },
-    {
       "start": "07:37",
-      "end": "07:59",
+      "end": "07:49.5",
       "label": "polarized"
     },
     {
-      "start": "07:59",
-      "end": "08:03",
-      "label": "tpol_to_s"
-    },
-    {
-      "start": "08:03",
-      "end": "08:17",
+      "start": "08:13.5",
+      "end": "08:16.5",
       "label": "shoaling"
-    },
-    {
-      "start": "08:17",
-      "end": "08:20",
-      "label": "s_to_tpol"
     },
     {
       "start": "08:20",
@@ -214,24 +124,9 @@
       "label": "polarized"
     },
     {
-      "start": "08:56",
-      "end": "09:00",
-      "label": "tpol_to_s"
-    },
-    {
-      "start": "09:00",
-      "end": "09:24",
+      "start": "09:18.8",
+      "end": "09:22.7",
       "label": "shoaling"
-    },
-    {
-      "start": "09:24",
-      "end": "09:33.5",
-      "label": "e+"
-    },
-    {
-      "start": "09:34",
-      "end": "09:38.5",
-      "label": "e-"
     },
     {
       "start": "09:38.5",
@@ -239,53 +134,53 @@
       "label": "polarized"
     },
     {
-      "start": "09:40",
-      "end": "09:42",
-      "label": "tpol_to_m"
-    },
-    {
       "start": "09:42",
-      "end": "09:49",
+      "end": "09:47.5",
       "label": "milling"
     },
     {
-      "start": "09:49",
-      "end": "10:02",
-      "label": "m_to_tpol"
-    },
-    {
-      "start": "10:02",
-      "end": "10:09",
+      "start": "10:23.5",
+      "end": "10:28.5",
       "label": "polarized"
     },
     {
-      "start": "10:23",
-      "end": "11:23",
+      "start": "10:34.5",
+      "end": "10:43.5",
       "label": "polarized"
     },
     {
-      "start": "11:32",
-      "end": "12:00",
+      "start": "10:57",
+      "end": "11:02.5",
       "label": "polarized"
     },
     {
-      "start": "12:00",
-      "end": "12:03",
-      "label": "tpol_to_m"
+      "start": "11:04",
+      "end": "11:08",
+      "label": "polarized"
     },
     {
-      "start": "12:03",
-      "end": "12:08",
-      "label": "milling"
+      "start": "11:14.5",
+      "end": "11:17.5",
+      "label": "polarized"
     },
     {
-      "start": "12:08",
-      "end": "12:20",
-      "label": "m_to_tpol"
+      "start": "11:38",
+      "end": "11:42",
+      "label": "polarized"
     },
     {
-      "start": "12:20",
-      "end": "12:35",
+      "start": "11:44",
+      "end": "11:53.5",
+      "label": "polarized"
+    },
+    {
+      "start": "11:55",
+      "end": "11:58.5",
+      "label": "polarized"
+    },
+    {
+      "start": "12:31.5",
+      "end": "12:34.5",
       "label": "polarized"
     },
     {
@@ -295,7 +190,17 @@
     },
     {
       "start": "13:02",
-      "end": "13:39",
+      "end": "13:04",
+      "label": "polarized"
+    },
+    {
+      "start": "13:05.5",
+      "end": "13:15.5",
+      "label": "polarized"
+    },
+    {
+      "start": "13:29.5",
+      "end": "13:36.5",
       "label": "polarized"
     }
   ]
