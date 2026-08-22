@@ -16,8 +16,8 @@
     "total": 361
   },
   "n_skipped_unknown_label": 0,
-  "accuracy": 0.9445983379501385,
-  "macro_f1": 0.8943030303030304,
+  "accuracy": 0.9501385041551247,
+  "macro_f1": 0.8392857142857142,
   "classification_report": {
     "traveling_polarized": {
       "precision": 1.0,
@@ -27,20 +27,20 @@
     },
     "milling": {
       "precision": 1.0,
-      "recall": 0.6923076923076923,
-      "f1-score": 0.8181818181818182,
+      "recall": 0.7230769230769231,
+      "f1-score": 0.8392857142857143,
       "support": 65.0
     },
     "shoaling": {
-      "precision": 0.6949152542372882,
+      "precision": 1.0,
       "recall": 1.0,
-      "f1-score": 0.82,
+      "f1-score": 1.0,
       "support": 41.0
     },
     "expansion_burst": {
-      "precision": 0.7142857142857143,
+      "precision": 0.21739130434782608,
       "recall": 1.0,
-      "f1-score": 0.8333333333333334,
+      "f1-score": 0.35714285714285715,
       "support": 5.0
     },
     "compaction": {
@@ -49,17 +49,17 @@
       "f1-score": 1.0,
       "support": 3.0
     },
-    "accuracy": 0.9445983379501385,
+    "accuracy": 0.9501385041551247,
     "macro avg": {
-      "precision": 0.8818401937046005,
-      "recall": 0.9384615384615385,
-      "f1-score": 0.8943030303030304,
+      "precision": 0.8434782608695652,
+      "recall": 0.9446153846153846,
+      "f1-score": 0.8392857142857142,
       "support": 361.0
     },
     "weighted avg": {
-      "precision": 0.9613932243633169,
-      "recall": 0.9445983379501385,
-      "f1-score": 0.944511038361454,
+      "precision": 0.9891605443815489,
+      "recall": 0.9501385041551247,
+      "f1-score": 0.9621586861891571,
       "support": 361.0
     }
   },
@@ -73,9 +73,9 @@
     ],
     [
       0,
-      45,
+      47,
+      0,
       18,
-      2,
       0
     ],
     [
@@ -107,6 +107,6 @@
     "expansion_burst",
     "compaction"
   ],
-  "baseline_accuracy": 0.9445983379501385,
-  "baseline_macro_f1": 0.8943030303030304
+  "baseline_accuracy": 0.9501385041551247,
+  "baseline_macro_f1": 0.8392857142857142
 }
