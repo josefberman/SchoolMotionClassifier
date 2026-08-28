@@ -134,18 +134,8 @@
       "label": "shoaling"
     },
     {
-      "start": "13:05",
-      "end": "13:12",
-      "label": "milling"
-    },
-    {
       "start": "13:17",
       "end": "13:20",
-      "label": "milling"
-    },
-    {
-      "start": "13:23",
-      "end": "13:30",
       "label": "milling"
     }
   ]
