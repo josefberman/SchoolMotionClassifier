@@ -1,15 +1,21 @@
-"""Random search to match sim order-parameter stats to real calibration targets."""
+"""Bayesian optimization to match sim order-parameter stats to real calibration targets."""
 
 from __future__ import annotations
 
 import json
 import sys
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import yaml
+from scipy.optimize import differential_evolution
+from scipy.stats import norm
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import ConstantKernel, Matern, WhiteKernel
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -24,7 +30,7 @@ from src.tune.calibration import (
     summarize_behavior_sims,
     total_calibration_loss,
 )
-from src.tune.search_space import SEARCH_SPACE, round_overrides, sample_overrides
+from src.tune.search_space import SEARCH_SPACE, round_overrides
 
 
 def _canonical_behavior_map(d: dict[str, Any] | None) -> dict[str, Any]:
@@ -69,6 +75,86 @@ def _yaml_center(behavior: str) -> dict:
     return _pick(SEARCH_SPACE.get(behavior, {}), cfg)
 
 
+def _param_bounds(behavior: str) -> tuple[list[str], np.ndarray]:
+    space = SEARCH_SPACE[behavior]
+    keys = list(space.keys())
+    bounds = np.array([space[k] for k in keys], dtype=float)
+    return keys, bounds
+
+
+def _clip_to_bounds(x: np.ndarray, bounds: np.ndarray) -> np.ndarray:
+    return np.clip(x, bounds[:, 0], bounds[:, 1])
+
+
+def _center_vector(keys: list[str], bounds: np.ndarray, center: dict) -> np.ndarray:
+    x = np.empty(len(keys), dtype=float)
+    for i, key in enumerate(keys):
+        lo, hi = bounds[i]
+        if key in center and isinstance(center[key], (int, float)):
+            x[i] = float(center[key])
+        else:
+            x[i] = 0.5 * (lo + hi)
+    return _clip_to_bounds(x, bounds)
+
+
+def _finite_loss(loss: float) -> float:
+    if not np.isfinite(loss):
+        return 1e6
+    return float(loss)
+
+
+def _suggest_bayes(Xs: np.ndarray, ys: np.ndarray, bounds: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """Next point by maximizing expected improvement on the unit cube."""
+    lo, hi = bounds[:, 0], bounds[:, 1]
+    span = np.maximum(hi - lo, 1e-12)
+    Xu = (Xs - lo) / span
+    y_best = float(np.min(ys))
+    n_dim = Xs.shape[1]
+    kernel = ConstantKernel(1.0, (1e-3, 1e3)) * Matern(
+        length_scale=np.ones(n_dim),
+        length_scale_bounds=(1e-2, 1e2),
+        nu=2.5,
+    ) + WhiteKernel(noise_level=0.05, noise_level_bounds=(1e-5, 1.0))
+    gp = GaussianProcessRegressor(
+        kernel=kernel,
+        normalize_y=True,
+        optimizer=None if Xs.shape[0] < 3 else "fmin_l_bfgs_b",
+        n_restarts_optimizer=0 if Xs.shape[0] < 3 else 2,
+        random_state=int(rng.integers(0, 2**31 - 1)),
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", ConvergenceWarning)
+        try:
+            gp.fit(Xu, ys)
+        except Exception:
+            return rng.uniform(lo, hi)
+
+        unit_bounds = [(0.0, 1.0)] * n_dim
+        xi = 0.01
+
+        def neg_ei(u: np.ndarray) -> float:
+            mu, sigma = gp.predict(np.asarray(u, dtype=float).reshape(1, -1), return_std=True)
+            sigma = max(float(sigma[0]), 1e-9)
+            z = (y_best - float(mu[0]) - xi) / sigma
+            ei = (y_best - float(mu[0]) - xi) * norm.cdf(z) + sigma * norm.pdf(z)
+            return -float(ei)
+
+        seed = int(rng.integers(0, 2**31 - 1))
+        try:
+            result = differential_evolution(
+                neg_ei,
+                unit_bounds,
+                seed=seed,
+                maxiter=40,
+                polish=True,
+                updating="immediate",
+            )
+            u = np.clip(result.x, 0.0, 1.0)
+            return lo + u * span
+        except Exception:
+            return rng.uniform(lo, hi)
+
+
 def tune_behavior(
     behavior: str,
     target_report: dict[str, dict],
@@ -77,7 +163,7 @@ def tune_behavior(
     n_seeds: int = 16,
     n_values: list[int] | None = None,
     n_jobs: int = -1,
-    jitter: float = 0.35,
+    n_initial: int = 10,
     rng: np.random.Generator | None = None,
     show_progress: bool = True,
 ) -> dict[str, Any]:
@@ -88,22 +174,28 @@ def tune_behavior(
     n_values = n_values or [20, 40]
     rng = rng or np.random.default_rng()
     target_block = target_report[behavior]
+    keys, bounds = _param_bounds(behavior)
+    n_initial = int(max(0, min(n_initial, max(n_trials - 1, 0))))
 
     best_loss = float("inf")
     best_overrides: dict = {}
     center = _yaml_center(behavior)
     trials: list[dict[str, Any]] = []
+    Xs: list[np.ndarray] = []
+    ys: list[float] = []
 
     for trial_idx in range(n_trials):
-        use_jitter = jitter if center else 0.0
-        center_dict = {behavior: center} if center else None
-        overrides = sample_overrides(
-            rng,
-            behaviors=[behavior],
-            center=center_dict,
-            jitter=use_jitter,
-        )
-        ov = overrides.get(behavior, {})
+        if trial_idx == 0 and center:
+            x = _center_vector(keys, bounds, center)
+            stage = "init-yaml"
+        elif trial_idx <= n_initial:
+            x = rng.uniform(bounds[:, 0], bounds[:, 1])
+            stage = "init-random"
+        else:
+            x = _suggest_bayes(np.vstack(Xs), np.asarray(ys), bounds, rng)
+            x = _clip_to_bounds(x, bounds)
+            stage = "bayes"
+        ov = {key: float(val) for key, val in zip(keys, x)}
         sim_report = summarize_behavior_sims(
             behavior,
             ov,
@@ -113,9 +205,12 @@ def tune_behavior(
         )
         loss = behavior_calibration_loss(sim_report[behavior], target_block)
         score = score_from_loss(loss)
+        Xs.append(x)
+        ys.append(_finite_loss(loss))
         record = {
             "behavior": behavior,
             "trial": trial_idx + 1,
+            "stage": stage,
             "loss": loss,
             "score": score,
             "n_segments": sim_report[behavior]["n_segments"],
@@ -127,7 +222,7 @@ def tune_behavior(
         if show_progress:
             sf = sim_report[behavior]["features"]
             print(
-                f"  trial {trial_idx + 1:3d}/{n_trials}  loss={loss:.4f}  "
+                f"  trial {trial_idx + 1:3d}/{n_trials}  {stage:11s}  loss={loss:.4f}  "
                 f"phi_trans={sf['phi_trans_mean']['mean']:.3f}  "
                 f"psi_tan={sf['psi_tan_mean']['mean']:.3f}  "
                 f"psi_rad={sf['psi_rad_pm_mean']['mean']:+.3f}"
@@ -136,7 +231,6 @@ def tune_behavior(
         if loss < best_loss:
             best_loss = loss
             best_overrides = ov
-            center = ov
             if show_progress:
                 print(f"    new best (loss={best_loss:.4f})")
 
@@ -158,7 +252,7 @@ def tune_all_behaviors(
     n_seeds: int = 16,
     n_values: list[int] | None = None,
     n_jobs: int = -1,
-    jitter: float = 0.35,
+    n_initial: int = 10,
     show_progress: bool = True,
 ) -> dict[str, Any]:
     """Tune each behavior independently, then merge best overrides."""
@@ -187,7 +281,7 @@ def tune_all_behaviors(
             n_seeds=n_seeds,
             n_values=n_values,
             n_jobs=n_jobs,
-            jitter=jitter,
+            n_initial=n_initial,
             rng=rng,
             show_progress=show_progress,
         )
@@ -229,6 +323,7 @@ def tune_all_behaviors(
         "n_trials_per_behavior": n_trials,
         "n_seeds": n_seeds,
         "n_values": n_values or [20, 40],
+        "n_initial": n_initial,
         "total_loss": total_calibration_loss(
             sim_report,
             target_report,

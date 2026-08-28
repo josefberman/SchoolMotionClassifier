@@ -88,7 +88,12 @@ def main() -> None:
         help="Group sizes to simulate",
     )
     parser.add_argument("--n-jobs", type=int, default=-1)
-    parser.add_argument("--jitter", type=float, default=0.35, help="Local search radius around best")
+    parser.add_argument(
+        "--n-initial",
+        type=int,
+        default=10,
+        help="Random evaluations after the YAML start; 0 = YAML then Bayesian proposals only",
+    )
     parser.add_argument(
         "--behaviors",
         nargs="*",
@@ -118,10 +123,12 @@ def main() -> None:
     n_trials = args.trials
     n_seeds = args.n_seeds
     n_values = list(args.n_values)
+    n_initial = args.n_initial
     if args.fast:
         n_trials = min(n_trials, 12)
         n_seeds = min(n_seeds, 8)
         n_values = [20]
+        n_initial = min(n_initial, 5)
 
     summary = tune_all_behaviors(
         args.target,
@@ -130,7 +137,7 @@ def main() -> None:
         n_seeds=n_seeds,
         n_values=n_values,
         n_jobs=args.n_jobs,
-        jitter=args.jitter,
+        n_initial=n_initial,
     )
 
     _print_feature_summary(summary)
