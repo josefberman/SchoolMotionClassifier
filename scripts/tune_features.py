@@ -78,22 +78,16 @@ def main() -> None:
         default=ROOT / "results" / "calibration_report_real.json",
         help="Real calibration report (default: results/calibration_report_real.json)",
     )
-    parser.add_argument("--trials", type=int, default=30, help="Trials per behavior")
-    parser.add_argument("--n-seeds", type=int, default=16, help="Seeds per group size")
+    parser.add_argument("--trials", type=int, default=100, help="Random-search trials per behavior")
+    parser.add_argument("--n-seeds", type=int, default=30, help="Seeds per group size")
     parser.add_argument(
         "--n-values",
         nargs="*",
         type=int,
-        default=[20, 40],
+        default=[20, 40, 100],
         help="Group sizes to simulate",
     )
     parser.add_argument("--n-jobs", type=int, default=-1)
-    parser.add_argument(
-        "--n-initial",
-        type=int,
-        default=10,
-        help="Random evaluations after the YAML start; 0 = YAML then Bayesian proposals only",
-    )
     parser.add_argument(
         "--behaviors",
         nargs="*",
@@ -123,12 +117,10 @@ def main() -> None:
     n_trials = args.trials
     n_seeds = args.n_seeds
     n_values = list(args.n_values)
-    n_initial = args.n_initial
     if args.fast:
         n_trials = min(n_trials, 12)
         n_seeds = min(n_seeds, 8)
         n_values = [20]
-        n_initial = min(n_initial, 5)
 
     summary = tune_all_behaviors(
         args.target,
@@ -137,7 +129,6 @@ def main() -> None:
         n_seeds=n_seeds,
         n_values=n_values,
         n_jobs=args.n_jobs,
-        n_initial=n_initial,
     )
 
     _print_feature_summary(summary)

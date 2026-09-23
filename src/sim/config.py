@@ -36,7 +36,7 @@ DEFAULTS: dict[str, Any] = {
     "sigma_s": 0.05,
     "omega_max": 0.45,
     "a_max": 0.35,
-    "burn_in": 60,
+    "burn_in": 300,
     "record_frames": 150,
 }
 

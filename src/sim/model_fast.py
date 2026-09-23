@@ -17,8 +17,9 @@ import numpy as np
 from src.sim.config import BEHAVIOR_KEYS, deep_merge, load_behavior_config, validate_radii
 from src.sim.model import SimResult, _wrap
 
-# Shared initialization heading jitter (radians). Not a YAML/search parameter.
-INIT_HEADING_NOISE = 0.15
+# Random initialization. Structure is formed by the YAML dynamics during burn_in.
+INIT_SPEED_LO = 0.05
+INIT_SPEED_HI = 0.20
 
 
 class FastSchoolSimulator:
@@ -48,33 +49,11 @@ class FastSchoolSimulator:
         self._init_agents()
 
     def _init_agents(self) -> None:
-        cfg = self.cfg
-        behavior = cfg.get("behavior", "traveling_polarized")
         span = 0.35 * self.half_extent
         self.pos[:, 0] = self.center[0] + self.rng.uniform(-span, span, self.n)
         self.pos[:, 1] = self.center[1] + self.rng.uniform(-span, span, self.n)
-        noise = self.rng.normal(0.0, INIT_HEADING_NOISE, self.n)
-        centroid = self.pos.mean(axis=0)
-        rel = self.pos - centroid
-        theta_rad = np.arctan2(rel[:, 1], rel[:, 0])
-
-        if behavior == "traveling_polarized":
-            theta_0 = float(self.rng.uniform(0.0, 2.0 * np.pi))
-            self.theta = theta_0 + noise
-        elif behavior == "milling":
-            self.theta = theta_rad + self.c_mill * (np.pi / 2.0) + noise
-        elif behavior == "shoaling":
-            self.theta = self.rng.uniform(0.0, 2.0 * np.pi, self.n)
-        elif behavior == "expansion_burst":
-            self.theta = theta_rad + noise
-        elif behavior == "compaction":
-            self.theta = theta_rad + np.pi + noise
-        else:
-            theta_0 = float(self.rng.uniform(0.0, 2.0 * np.pi))
-            self.theta = theta_0 + noise
-
-        self.theta = np.mod(self.theta, 2.0 * np.pi)
-        self.speed[:] = float(cfg["s_0"])
+        self.theta = self.rng.uniform(0.0, 2.0 * np.pi, self.n)
+        self.speed[:] = self.rng.uniform(INIT_SPEED_LO, INIT_SPEED_HI, self.n)
 
     def headings(self) -> np.ndarray:
         return np.stack((np.cos(self.theta), np.sin(self.theta)), axis=1)
@@ -236,7 +215,7 @@ def run_transition_fast(
     total_frames: int = 300,
     morph_start_frac: float = 0.30,
     morph_end_frac: float = 0.70,
-    burn_in: int = 80,
+    burn_in: int = 300,
 ) -> SimResult:
     """Simulate a transition by linearly morphing the 13 behavior parameters."""
     from src.labels import BEHAVIOR_SHORT
