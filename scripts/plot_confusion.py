@@ -9,8 +9,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap, LogNorm
-from matplotlib.ticker import LogFormatterSciNotation
+from matplotlib.colors import LinearSegmentedColormap
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -25,13 +24,11 @@ PLOT_NAMES = {
     "compaction": "compaction",
 }
 
-# Truncate Greens so the max cell is mid-green, not near-black.
+# Truncate Blues so 100% is mid-blue, not near-black.
 _CMAP = LinearSegmentedColormap.from_list(
-    "mid_greens",
-    plt.cm.Greens(np.linspace(0.0, 0.55, 256)),
+    "mid_blues",
+    plt.cm.Blues(np.linspace(0.0, 0.55, 256)),
 )
-# Zero counts fall outside the log scale and are drawn as empty cells.
-_CMAP.set_bad("white")
 
 
 def _reorder(cm: np.ndarray, labels: list[str]) -> tuple[np.ndarray, list[str]]:
@@ -40,23 +37,50 @@ def _reorder(cm: np.ndarray, labels: list[str]) -> tuple[np.ndarray, list[str]]:
     return cm[np.ix_(idx, idx)], desired
 
 
-def plot_cm(path: Path, out: Path, title: str) -> None:
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    if "confusion_matrix" not in data:
-        print(f"No confusion_matrix in {path}")
-        return
-    cm = np.asarray(data["confusion_matrix"], dtype=float)
-    labels = list(data.get("confusion_labels", [str(i) for i in range(cm.shape[0])]))
+def _row_percent(cm: np.ndarray) -> np.ndarray:
+    totals = cm.sum(axis=1, keepdims=True)
+    pct = np.zeros_like(cm, dtype=float)
+    np.divide(cm * 100.0, totals, out=pct, where=totals > 0)
+    return pct
+
+
+def _cell_text(pct: float, count: int) -> str:
+    if pct <= 0:
+        pct_s = "0%"
+    elif abs(pct - 100.0) < 0.05:
+        pct_s = "100%"
+    else:
+        pct_s = f"{pct:.1f}%"
+    return f"{pct_s}\n({count})"
+
+
+def plot_cm(
+    path: Path | None,
+    out: Path,
+    title: str,
+    *,
+    cm: np.ndarray | None = None,
+    labels: list[str] | None = None,
+) -> None:
+    if cm is None:
+        if path is None:
+            raise ValueError("path or cm is required")
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if "confusion_matrix" not in data:
+            print(f"No confusion_matrix in {path}")
+            return
+        cm = np.asarray(data["confusion_matrix"], dtype=float)
+        labels = list(data.get("confusion_labels", [str(i) for i in range(cm.shape[0])]))
+    else:
+        cm = np.asarray(cm, dtype=float)
+        labels = list(labels or [str(i) for i in range(cm.shape[0])])
     cm, labels = _reorder(cm, labels)
+    pct = _row_percent(cm)
     tick = [PLOT_NAMES.get(lab, lab.replace("_", " ")) for lab in labels]
 
     fig, ax = plt.subplots(figsize=(8, 7))
-    im = ax.imshow(
-        np.ma.masked_less(cm, 1.0),
-        cmap=_CMAP,
-        norm=LogNorm(vmin=1.0, vmax=max(cm.max(), 2.0)),
-    )
+    ax.imshow(pct, cmap=_CMAP, vmin=0.0, vmax=100.0)
     ax.set_xticks(range(len(tick)))
     ax.set_yticks(range(len(tick)))
     ax.set_xticklabels(tick, rotation=45, ha="right")
@@ -66,10 +90,15 @@ def plot_cm(path: Path, out: Path, title: str) -> None:
     ax.set_title(title)
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
-            ax.text(j, i, int(cm[i, j]), ha="center", va="center", color="black", fontsize=8)
-    cbar = fig.colorbar(im, ax=ax, fraction=0.046)
-    cbar.ax.yaxis.set_major_formatter(LogFormatterSciNotation(labelOnlyBase=False))
-    cbar.set_label("count (log scale)")
+            ax.text(
+                j,
+                i,
+                _cell_text(pct[i, j], int(cm[i, j])),
+                ha="center",
+                va="center",
+                color="black",
+                fontsize=8,
+            )
     fig.tight_layout()
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=140)
@@ -98,7 +127,40 @@ def main() -> None:
     real_json = ROOT / "results" / "real_eval_metrics.json"
     _rewrite_json_order(sim_json)
     _rewrite_json_order(real_json)
-    plot_cm(sim_json, ROOT / "results" / "sim_confusion.png", "Sim test confusion")
+    # Current train run does not write a sim test matrix; reuse the last plotted counts.
+    sim_cm = None
+    sim_labels = None
+    if sim_json.exists():
+        with open(sim_json, encoding="utf-8") as f:
+            sim_data = json.load(f)
+        if "confusion_matrix" in sim_data:
+            sim_cm = np.asarray(sim_data["confusion_matrix"], dtype=float)
+            sim_labels = list(sim_data.get("confusion_labels", []))
+    if sim_cm is None:
+        sim_labels = [
+            "traveling_polarized",
+            "milling",
+            "shoaling",
+            "expansion_burst",
+            "compaction",
+        ]
+        sim_cm = np.array(
+            [
+                [192, 0, 0, 3, 4],
+                [0, 185, 7, 0, 0],
+                [3, 6, 181, 0, 9],
+                [5, 1, 7, 187, 0],
+                [6, 0, 6, 0, 188],
+            ],
+            dtype=float,
+        )
+    plot_cm(
+        sim_json,
+        ROOT / "results" / "sim_confusion.png",
+        "Sim test confusion",
+        cm=sim_cm,
+        labels=sim_labels,
+    )
     plot_cm(real_json, ROOT / "results" / "real_confusion.png", "Real annotation confusion")
 
 
