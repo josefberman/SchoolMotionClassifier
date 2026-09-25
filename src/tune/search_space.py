@@ -5,9 +5,6 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-import numpy as np
-from scipy.stats.qmc import LatinHypercube, scale
-
 from src.labels import CANONICAL
 
 # Ranges are (low, high) inclusive for uniform sampling.
@@ -77,32 +74,15 @@ def sample_overrides(
     return out
 
 
-def space_filling_samples(
+def random_samples(
     behavior: str,
     n: int,
     rng,
 ) -> list[dict[str, float]]:
-    """n Latin-hypercube points in SEARCH_SPACE[behavior] (one per axis stratum)."""
+    """n independent uniform draws from SEARCH_SPACE[behavior]."""
     if n <= 0 or behavior not in SEARCH_SPACE:
         return []
-    space = SEARCH_SPACE[behavior]
-    keys = [k for k, spec in space.items() if isinstance(spec, tuple) and len(spec) == 2]
-    lo = np.array([space[k][0] for k in keys], dtype=float)
-    hi = np.array([space[k][1] for k in keys], dtype=float)
-    seed = int(rng.integers(0, 2**31 - 1))
-    try:
-        sampler = LatinHypercube(d=len(keys), scramble=True, seed=seed, optimization="random-cd")
-    except TypeError:
-        sampler = LatinHypercube(d=len(keys), scramble=True, seed=seed)
-    unit = sampler.random(n)
-    pts = scale(unit, lo, hi)
-    out: list[dict[str, float]] = []
-    for row in pts:
-        ov: dict[str, float] = {}
-        for key, val in zip(keys, row):
-            ov[key] = int(round(val)) if key in _INT_KEYS else float(val)
-        out.append(ov)
-    return out
+    return [_sample_node(rng, SEARCH_SPACE[behavior], None, 0.0) for _ in range(n)]
 
 
 def round_overrides(overrides: dict[str, dict]) -> dict[str, dict]:
