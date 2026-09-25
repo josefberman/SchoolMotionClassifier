@@ -8,3 +8,6 @@ venv/
 results/
 sim_datasets/
 schooling-datasets/
+mcp.json
+figures.ipynb
+annotated_features.csv
