@@ -9,18 +9,19 @@ from src.labels import CANONICAL
 
 # Ranges are (low, high) inclusive for uniform sampling.
 # Interaction radii r_r=30, r_o=90, r_a=150 are fixed and not tuned.
-# One box for all behaviors: w_tan / w_rad span the old per-class intervals.
+# Bounds cover the model defaults and current YAMLs without allowing
+# one-frame π turns or unbounded social torques.
 _PARAM_SPACE: dict[str, tuple[float, float]] = {
-    "w_r": (2.0, 3.0),
-    "w_o": (0.5, 1.5),
-    "w_a": (0.5, 1.5),
-    "w_tan": (0.0, 1.40),
-    "w_rad": (-1.20, 1.20),
-    "sigma_theta": (0.0, 0.1),
-    "s_0": (0.5, 1.5),
-    "sigma_s": (0.0, 0.1),
-    "omega_max": (0.0, 0.1),
-    "a_max": (0.0, 0.5),
+    "w_r": (0.5, 4.0),
+    "w_o": (0.0, 2.5),
+    "w_a": (0.0, 2.5),
+    "w_tan": (0.0, 2.0),
+    "w_rad": (-2.0, 2.0),
+    "sigma_theta": (0.0, 0.25),
+    "s_0": (0.3, 2.0),
+    "sigma_s": (0.0, 0.20),
+    "omega_max": (0.02, 0.30),
+    "a_max": (0.05, 1.50),
 }
 SEARCH_SPACE: dict[str, dict[str, Any]] = {
     behavior: dict(_PARAM_SPACE) for behavior in CANONICAL
