@@ -4,189 +4,329 @@
   "source": "trajectory-assisted annotation",
   "segments": [
     {
-      "start": "00:03",
-      "end": "00:06.5",
+      "start": "00:07.5",
+      "end": "00:50",
+      "label": "traveling"
+    },
+    {
+      "start": "00:50",
+      "end": "00:51.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "00:51.5",
+      "end": "00:53",
+      "label": "compaction"
+    },
+    {
+      "start": "00:53",
+      "end": "00:54",
+      "label": "compaction to shoaling"
+    },
+    {
+      "start": "00:54",
+      "end": "00:59.5",
       "label": "shoaling"
     },
     {
-      "start": "00:07",
-      "end": "00:29",
-      "label": "polarized"
+      "start": "00:59.5",
+      "end": "01:05.5",
+      "label": "shoaling to traveling"
     },
     {
-      "start": "00:33",
-      "end": "00:50",
-      "label": "polarized"
+      "start": "01:05.5",
+      "end": "02:00.5",
+      "label": "traveling"
     },
     {
-      "start": "01:06",
-      "end": "01:27",
-      "label": "polarized"
+      "start": "02:17.5",
+      "end": "02:24.5",
+      "label": "traveling"
     },
     {
-      "start": "01:31",
-      "end": "01:53",
-      "label": "polarized"
-    },
-    {
-      "start": "02:04",
-      "end": "02:08",
-      "label": "milling"
-    },
-    {
-      "start": "02:34",
-      "end": "02:38",
-      "label": "polarized"
-    },
-    {
-      "start": "02:46",
-      "end": "03:03",
-      "label": "polarized"
+      "start": "02:31.5",
+      "end": "03:09.5",
+      "label": "traveling"
     },
     {
       "start": "03:14",
-      "end": "03:41",
-      "label": "polarized"
+      "end": "03:41.5",
+      "label": "traveling"
     },
     {
-      "start": "03:47",
-      "end": "03:58",
-      "label": "polarized"
+      "start": "03:41.5",
+      "end": "03:42.5",
+      "label": "traveling to compaction"
     },
     {
-      "start": "04:01",
-      "end": "04:26",
-      "label": "polarized"
+      "start": "03:42.5",
+      "end": "03:44.5",
+      "label": "compaction"
     },
     {
-      "start": "04:29",
-      "end": "04:32",
-      "label": "polarized"
+      "start": "03:44.5",
+      "end": "03:48",
+      "label": "compaction to traveling"
     },
     {
-      "start": "04:35",
-      "end": "04:42",
-      "label": "polarized"
+      "start": "03:48",
+      "end": "04:12",
+      "label": "traveling"
     },
     {
-      "start": "04:48",
-      "end": "05:10",
-      "label": "polarized"
+      "start": "04:12",
+      "end": "04:13",
+      "label": "traveling to compaction"
     },
     {
-      "start": "05:12",
-      "end": "05:14.5",
+      "start": "04:13",
+      "end": "04:15",
+      "label": "compaction"
+    },
+    {
+      "start": "04:15",
+      "end": "04:16",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "04:16",
+      "end": "04:37.5",
+      "label": "traveling"
+    },
+    {
+      "start": "04:37.5",
+      "end": "04:38.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "04:38.5",
+      "end": "04:40.5",
+      "label": "compaction"
+    },
+    {
+      "start": "04:40.5",
+      "end": "04:41.5",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "04:41.5",
+      "end": "04:43.5",
+      "label": "traveling"
+    },
+    {
+      "start": "04:49",
+      "end": "05:09.5",
+      "label": "traveling"
+    },
+    {
+      "start": "05:09.5",
+      "end": "05:11.5",
+      "label": "traveling to milling"
+    },
+    {
+      "start": "05:11.5",
+      "end": "05:15",
       "label": "milling"
     },
     {
-      "start": "05:20",
-      "end": "05:35",
-      "label": "polarized"
+      "start": "05:15",
+      "end": "05:18.5",
+      "label": "milling to traveling"
     },
     {
-      "start": "05:44",
-      "end": "06:13",
-      "label": "polarized"
+      "start": "05:18.5",
+      "end": "05:33.5",
+      "label": "traveling"
     },
     {
-      "start": "06:17",
+      "start": "05:33.5",
+      "end": "05:34.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "05:34.5",
+      "end": "05:36.5",
+      "label": "compaction"
+    },
+    {
+      "start": "05:36.5",
+      "end": "05:37.5",
+      "label": "compaction to expansion"
+    },
+    {
+      "start": "05:37.5",
+      "end": "05:40.5",
+      "label": "expansion"
+    },
+    {
+      "start": "05:40.5",
+      "end": "05:43",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "05:43",
       "end": "06:40",
-      "label": "polarized"
+      "label": "traveling"
     },
     {
-      "start": "06:59",
-      "end": "07:01.5",
-      "label": "polarized"
+      "start": "06:40",
+      "end": "06:42",
+      "label": "traveling to shoaling"
     },
     {
-      "start": "07:04",
-      "end": "07:09",
-      "label": "polarized"
+      "start": "06:42",
+      "end": "06:52",
+      "label": "shoaling"
     },
     {
-      "start": "07:13",
-      "end": "07:17",
-      "label": "polarized"
+      "start": "06:52",
+      "end": "06:58",
+      "label": "shoaling to traveling"
     },
     {
-      "start": "07:21",
-      "end": "07:58",
-      "label": "polarized"
+      "start": "06:58",
+      "end": "07:07.5",
+      "label": "traveling"
     },
     {
-      "start": "08:01",
-      "end": "08:24",
-      "label": "polarized"
+      "start": "07:07.5",
+      "end": "07:08.5",
+      "label": "traveling to compaction"
     },
     {
-      "start": "08:34",
-      "end": "08:57",
-      "label": "polarized"
+      "start": "07:08.5",
+      "end": "07:10.5",
+      "label": "compaction"
     },
     {
-      "start": "09:01",
-      "end": "09:10",
-      "label": "polarized"
+      "start": "07:10.5",
+      "end": "07:14",
+      "label": "compaction to traveling"
     },
     {
-      "start": "09:18",
-      "end": "09:30",
-      "label": "polarized"
+      "start": "07:14",
+      "end": "09:39.5",
+      "label": "traveling"
     },
     {
-      "start": "09:46",
-      "end": "09:53",
-      "label": "polarized"
+      "start": "09:39.5",
+      "end": "09:41",
+      "label": "traveling to expansion"
     },
     {
-      "start": "10:00",
-      "end": "10:13",
-      "label": "polarized"
+      "start": "09:41",
+      "end": "09:43.5",
+      "label": "expansion"
+    },
+    {
+      "start": "09:43.5",
+      "end": "09:45.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "09:45.5",
+      "end": "09:55",
+      "label": "traveling"
+    },
+    {
+      "start": "09:59.5",
+      "end": "10:08",
+      "label": "traveling"
+    },
+    {
+      "start": "10:08",
+      "end": "10:09",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "10:09",
+      "end": "10:10.5",
+      "label": "compaction"
+    },
+    {
+      "start": "10:10.5",
+      "end": "10:12",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "10:12",
+      "end": "10:15",
+      "label": "traveling"
     },
     {
       "start": "10:21",
-      "end": "10:31",
-      "label": "polarized"
+      "end": "11:18",
+      "label": "traveling"
     },
     {
-      "start": "10:36",
-      "end": "10:50",
-      "label": "polarized"
-    },
-    {
-      "start": "11:02",
+      "start": "11:18",
       "end": "11:19",
-      "label": "polarized"
+      "label": "traveling to compaction"
     },
     {
-      "start": "11:28",
-      "end": "11:56",
-      "label": "polarized"
+      "start": "11:19",
+      "end": "11:22",
+      "label": "compaction"
     },
     {
-      "start": "12:10",
-      "end": "12:30",
-      "label": "polarized"
+      "start": "11:22",
+      "end": "11:29",
+      "label": "compaction to traveling"
     },
     {
-      "start": "12:36",
-      "end": "12:39",
-      "label": "shoaling"
+      "start": "11:29",
+      "end": "11:44",
+      "label": "traveling"
     },
     {
-      "start": "12:44",
-      "end": "13:07",
-      "label": "polarized"
+      "start": "11:44",
+      "end": "11:45",
+      "label": "traveling to compaction"
     },
     {
-      "start": "13:13",
-      "end": "13:15",
-      "label": "shoaling"
+      "start": "11:45",
+      "end": "11:46.5",
+      "label": "compaction"
+    },
+    {
+      "start": "11:46.5",
+      "end": "11:48",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "11:48",
+      "end": "12:12.5",
+      "label": "traveling"
+    },
+    {
+      "start": "12:12.5",
+      "end": "12:13.5",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "12:13.5",
+      "end": "12:15",
+      "label": "expansion"
+    },
+    {
+      "start": "12:15",
+      "end": "12:16",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "12:16",
+      "end": "12:34.5",
+      "label": "traveling"
+    },
+    {
+      "start": "12:42",
+      "end": "13:10",
+      "label": "traveling"
     },
     {
       "start": "13:15",
-      "end": "13:39",
-      "label": "polarized"
+      "end": "13:40.087",
+      "label": "traveling"
     }
   ]
 }
