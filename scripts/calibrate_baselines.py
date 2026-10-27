@@ -19,8 +19,8 @@ from src.features.dataset import (
     load_manifest,
     load_real_segments,
 )
-from src.features.order_params import FEATURE_NAMES
-from src.features.windows import frame_feature_matrix
+from src.features.order_params import AGG_FEATURE_NAMES, FEATURE_NAMES
+from src.features.windows import window_feature_matrix
 from src.labels import CANONICAL, is_transition
 from src.sim.io import load_trajectory_csv
 
@@ -40,8 +40,10 @@ def _aggregate(
                 "mean": float(np.mean(col)),
                 "std": float(np.std(col)),
             }
+        n = int(len(xs))
         report[behavior] = {
-            "n_frames": int(len(xs)),
+            "n_windows": n,
+            "n_frames": n,
             "n_segments": int((n_segments or {}).get(behavior, 0)),
             "features": feat_stats,
         }
@@ -69,7 +71,7 @@ def _summarize_sim(
         if not csv_path.exists():
             continue
         added = None
-        for feat_vec, label in features_from_sim_entry(entry, mode="frame", sim_root=sim_root):
+        for feat_vec, label in features_from_sim_entry(entry, mode="windows", sim_root=sim_root):
             key = label if include_transitions else behavior
             rows[key].append(feat_vec)
             added = key
@@ -96,7 +98,9 @@ def _summarize_real(
         a, b = seg["start"], min(seg["end"], pos.shape[0])
         if b - a < min_frames:
             continue
-        X = frame_feature_matrix(pos[a:b], vel[a:b], fps=seg["fps"])
+        X, _ = window_feature_matrix(
+            pos[a:b], vel[a:b], fps=seg["fps"], names=list(AGG_FEATURE_NAMES)
+        )
         if X.shape[0] == 0:
             continue
         rows[label].append(X)
@@ -107,10 +111,10 @@ def _summarize_real(
 def _print_report(report: dict[str, dict], *, title: str) -> None:
     print(title)
     for behavior, block in report.items():
-        n = block.get("n_frames", block.get("n_segments", block.get("n_clips", 0)))
+        n = block.get("n_windows", block.get("n_frames", block.get("n_segments", block.get("n_clips", 0))))
         n_seg = block.get("n_segments")
         extra = f", {n_seg} segments" if n_seg else ""
-        print(f"{behavior}  (n={n} frames{extra})")
+        print(f"{behavior}  (n={n} windows{extra})")
         for name in FEATURE_NAMES:
             stats = block["features"][name]
             print(f"  {name:16s}  mean={stats['mean']:+.4f}  std={stats['std']:.4f}")
@@ -119,7 +123,7 @@ def _print_report(report: dict[str, dict], *, title: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Mean/std of per-frame order parameters per behavior (sim manifest and/or real annotations).",
+        description="Mean/std of 5-frame window order parameters per behavior (sim manifest and/or real annotations).",
     )
     parser.add_argument(
         "--source",

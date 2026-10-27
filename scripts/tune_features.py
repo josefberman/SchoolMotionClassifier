@@ -15,8 +15,30 @@ import yaml
 
 from src.labels import BEHAVIOR_SHORT, canonicalize
 from src.features.order_params import FEATURE_NAMES
-from src.sim.config import CONFIG_DIR, deep_merge
+from src.sim.config import CONFIG_DIR, deep_merge, validate_radii
 from src.tune.feature_match import BEST_PATH, tune_all_behaviors
+
+DEFAULT_RADII = {"r_r": 50.0, "r_o": 100.0, "r_a": 150.0}
+
+
+def radii_overrides(r_r: float, r_o: float, r_a: float) -> dict[str, float]:
+    radii = {"r_r": float(r_r), "r_o": float(r_o), "r_a": float(r_a)}
+    validate_radii(radii)
+    return radii
+
+
+def write_radii_to_yamls(r_r: float, r_o: float, r_a: float) -> list[str]:
+    """Write fixed Couzin radii into every behavior YAML (weights unchanged)."""
+    radii = radii_overrides(r_r, r_o, r_a)
+    updated = []
+    for path in sorted(CONFIG_DIR.glob("*.yaml")):
+        with open(path, encoding="utf-8") as f:
+            current = yaml.safe_load(f) or {}
+        current.update(radii)
+        with open(path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(current, f, sort_keys=False, default_flow_style=False)
+        updated.append(str(path))
+    return updated
 
 
 def _print_feature_summary(summary: dict) -> None:
@@ -40,9 +62,17 @@ def _print_feature_summary(summary: dict) -> None:
             )
 
 
-def apply_best_to_yaml(best_path: Path | None = None, *, dry_run: bool = False) -> list[str]:
+def apply_best_to_yaml(
+    best_path: Path | None = None,
+    *,
+    dry_run: bool = False,
+    r_r: float = DEFAULT_RADII["r_r"],
+    r_o: float = DEFAULT_RADII["r_o"],
+    r_a: float = DEFAULT_RADII["r_a"],
+) -> list[str]:
     """Merge feature-match best overrides into configs/behaviors/*.yaml."""
     best_path = best_path or BEST_PATH
+    radii = radii_overrides(r_r, r_o, r_a)
     with open(best_path, encoding="utf-8") as f:
         best = json.load(f)
     overrides = best.get("behavior_overrides") or {}
@@ -60,9 +90,7 @@ def apply_best_to_yaml(best_path: Path | None = None, *, dry_run: bool = False) 
             current = yaml.safe_load(f) or {}
         ov = {k: v for k, v in ov.items() if k not in ("r_r", "r_o", "r_a")}
         merged = deep_merge(current, ov)
-        merged["r_r"] = 30.0
-        merged["r_o"] = 90.0
-        merged["r_a"] = 150.0
+        merged.update(radii)
         updated.append(str(path))
         if not dry_run:
             with open(path, "w", encoding="utf-8") as f:
@@ -78,7 +106,7 @@ def main() -> None:
         default=ROOT / "results" / "calibration_report_real.json",
         help="Real calibration report (default: results/calibration_report_real.json)",
     )
-    parser.add_argument("--trials", type=int, default=100, help="Random-search trials per behavior")
+    parser.add_argument("--trials", type=int, default=100, help="CMA-ES evaluations per behavior")
     parser.add_argument("--n-seeds", type=int, default=30, help="Seeds per group size")
     parser.add_argument(
         "--n-values",
@@ -104,11 +132,30 @@ def main() -> None:
         action="store_true",
         help="Write results/tuning/feature_match/best.json overrides to configs/behaviors/*.yaml",
     )
+    parser.add_argument(
+        "--set-radii",
+        action="store_true",
+        help="Write --r-r/--r-o/--r-a into configs/behaviors/*.yaml and exit",
+    )
+    parser.add_argument("--r-r", type=float, default=DEFAULT_RADII["r_r"], help="Fixed repulsion radius")
+    parser.add_argument("--r-o", type=float, default=DEFAULT_RADII["r_o"], help="Fixed orientation radius")
+    parser.add_argument("--r-a", type=float, default=DEFAULT_RADII["r_a"], help="Fixed attraction radius")
     parser.add_argument("--dry-run", action="store_true", help="With --apply-best, print paths only")
     args = parser.parse_args()
 
+    if args.set_radii:
+        for p in write_radii_to_yamls(args.r_r, args.r_o, args.r_a):
+            print(f"Updated radii: {p}")
+        print(f"radii r_r={args.r_r} r_o={args.r_o} r_a={args.r_a}")
+        return
+
     if args.apply_best:
-        paths = apply_best_to_yaml(dry_run=args.dry_run)
+        paths = apply_best_to_yaml(
+            dry_run=args.dry_run,
+            r_r=args.r_r,
+            r_o=args.r_o,
+            r_a=args.r_a,
+        )
         verb = "Would update" if args.dry_run else "Updated"
         for p in paths:
             print(f"{verb}: {p}")

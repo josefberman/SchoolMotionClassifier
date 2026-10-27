@@ -1,23 +1,71 @@
 {
-  "n_train": 4924,
+  "n_train": 120000,
+  "n_test": 30000,
   "include_transitions": false,
-  "stable_only": false,
+  "stable_only": true,
   "n_classes": 5,
   "train_counts": {
-    "baseline": 4924,
+    "baseline": 150000,
     "transition": 0,
-    "total": 4924
+    "total": 150000
   },
-  "n_real": 354,
   "features": [
     "phi_trans_mean",
-    "psi_tan_mean",
-    "psi_rad_pm_mean"
+    "phi_tan_mean",
+    "phi_rad_pm_mean",
+    "phi_tan_unsigned_mean",
+    "phi_local_mean"
   ],
   "best_params": {
-    "learning_rate": 0.01,
-    "max_depth": 7,
-    "n_estimators": 400
+    "learning_rate": 0.075,
+    "max_depth": 3,
+    "n_estimators": 500
   },
-  "best_real_macro_f1": 0.8811452874610769
+  "best_sim_macro_f1": 0.8721339880013783,
+  "sim_test_macro_f1": 0.8721339880013783,
+  "grid_search_macro_f1": 0.8721339880013783,
+  "confusion_matrix": [
+    [
+      5396,
+      27,
+      19,
+      224,
+      334
+    ],
+    [
+      8,
+      5848,
+      31,
+      93,
+      20
+    ],
+    [
+      21,
+      101,
+      5024,
+      40,
+      814
+    ],
+    [
+      141,
+      287,
+      22,
+      5536,
+      14
+    ],
+    [
+      311,
+      73,
+      1215,
+      17,
+      4384
+    ]
+  ],
+  "confusion_labels": [
+    "traveling",
+    "milling",
+    "shoaling",
+    "expansion",
+    "compaction"
+  ]
 }

@@ -13,7 +13,7 @@ from src.classify.train import train_classifier
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train classifier on simulated features.")
+    parser = argparse.ArgumentParser(description="Train classifier on 5-frame windows of simulated features.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--transitions",
@@ -26,7 +26,7 @@ def main() -> None:
         "--stable-only",
         action="store_false",
         dest="transitions",
-        help="Train on baseline clips only (tpol, milling, shoaling, e+, e−); exclude transitions",
+        help="Train on baseline clips only (traveling, milling, shoaling, e+, e−); exclude transitions",
     )
     parser.add_argument(
         "--manifest",

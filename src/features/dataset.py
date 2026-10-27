@@ -9,6 +9,8 @@ import numpy as np
 
 from src.features.order_params import AGG_FEATURE_NAMES, FEATURE_NAMES
 from src.features.windows import (
+    HOP_FRAMES,
+    WINDOW_FRAMES,
     feature_dict_to_array,
     frame_feature_matrix,
     segment_feature_vector,
@@ -45,15 +47,16 @@ def _names_for_mode(mode: str) -> list[str]:
 
 def features_from_sim_entry(
     entry: dict,
-    mode: str = "segment",
-    window_sec: float = 2.0,
+    mode: str = "windows",
+    window_frames: int = WINDOW_FRAMES,
+    hop_frames: int = HOP_FRAMES,
     sim_root: Path | None = None,
 ) -> list[tuple[np.ndarray, str]]:
     """Return list of (x, label).
 
     Baseline clips use the full recording. Transition clips use only the morph
     window (morph_start .. morph_end) so features match real transition segments.
-    mode='frame' emits one row per frame (instantaneous Φ values).
+    mode='windows' emits one row per 5-frame window (mean Φ over the window).
     """
     sim_root = sim_root or (ROOT / "sim_datasets")
     csv_path = Path(entry["csv"])
@@ -67,22 +70,20 @@ def features_from_sim_entry(
         a, b = _transition_morph_range(entry, pos.shape[0])
         pos, vel = pos[a:b], vel[a:b]
 
+    if entry.get("event_start") is not None:
+        a = int(entry["event_start"])
+        b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
+        a, b = _clip_frame_range(a, b, pos.shape[0])
+        pos, vel = pos[a:b], vel[a:b]
+
     if mode == "frame":
-        if entry.get("event_start") is not None:
-            a = int(entry["event_start"])
-            b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
-            a, b = _clip_frame_range(a, b, pos.shape[0])
-            pos, vel = pos[a:b], vel[a:b]
         X = frame_feature_matrix(pos, vel, fps=fps)
         return [(row, label) for row in X]
 
     if mode == "windows":
-        feats = sliding_window_features(pos, vel, window_sec=window_sec, fps=fps)
-    elif entry.get("event_start") is not None:
-        a = int(entry["event_start"])
-        b = int(entry.get("event_end", min(pos.shape[0], a + 200)))
-        a, b = _clip_frame_range(a, b, pos.shape[0])
-        feats = [segment_feature_vector(pos[a:b], vel[a:b], fps=fps)]
+        feats = sliding_window_features(
+            pos, vel, window_frames=window_frames, hop_frames=hop_frames, fps=fps
+        )
     else:
         feats = [segment_feature_vector(pos, vel, fps=fps)]
     return [(feature_dict_to_array(f), label) for f in feats]
@@ -96,7 +97,9 @@ def build_sim_xy(
     split: str | None = None,
     manifest_path: Path | None = None,
     sim_root: Path | None = None,
-    mode: str = "frame",
+    mode: str = "windows",
+    window_frames: int = WINDOW_FRAMES,
+    hop_frames: int = HOP_FRAMES,
     include_transitions: bool = True,
     stable_only: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -121,7 +124,9 @@ def build_sim_xy(
     entries = kept
     xs, ys = [], []
     for e in entries:
-        for x, y in features_from_sim_entry(e, mode=mode, sim_root=sim_root):
+        for x, y in features_from_sim_entry(
+            e, mode=mode, window_frames=window_frames, hop_frames=hop_frames, sim_root=sim_root
+        ):
             xs.append(x)
             ys.append(y)
     names = _names_for_mode(mode)
@@ -178,7 +183,9 @@ def build_real_xy(
     min_frames: int = 15,
     include_transitions: bool = True,
     stable_only: bool = False,
-    mode: str = "frame",
+    mode: str = "windows",
+    window_frames: int = WINDOW_FRAMES,
+    hop_frames: int = HOP_FRAMES,
 ) -> tuple[np.ndarray, np.ndarray, list[str], list[dict]]:
     segs = load_real_segments()
     if not include_transitions:
@@ -193,6 +200,18 @@ def build_real_xy(
             X = frame_feature_matrix(pos[a:b], vel[a:b], fps=s["fps"])
             for row in X:
                 xs.append(row)
+                ys.append(s["label"])
+                kept.append(s)
+        elif mode == "windows":
+            feats = sliding_window_features(
+                pos[a:b],
+                vel[a:b],
+                window_frames=window_frames,
+                hop_frames=hop_frames,
+                fps=s["fps"],
+            )
+            for feat in feats:
+                xs.append(feature_dict_to_array(feat))
                 ys.append(s["label"])
                 kept.append(s)
         else:

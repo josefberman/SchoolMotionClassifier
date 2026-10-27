@@ -9,7 +9,7 @@ from src.features.order_params import compute_order_params_series
 # Qualitative bands on Φ_trans and anisotropy-corrected Φ_tan / Φ_rad^±.
 # Numerical tan/rad thresholds from the old uncorrected features do not apply.
 _BOUNDS: dict[str, dict[str, float]] = {
-    "traveling_polarized": {
+    "traveling": {
         "phi_trans_min": 0.65,
         "phi_tan_max": 0.55,
     },
@@ -21,7 +21,7 @@ _BOUNDS: dict[str, dict[str, float]] = {
         "phi_trans_max": 0.72,
         "phi_rad_abs_max": 0.40,
     },
-    "expansion_burst": {
+    "expansion": {
         "phi_rad_min": 0.0,
     },
     "compaction": {
@@ -68,7 +68,7 @@ def validate_behavior(
     phi_tan = metrics["phi_tan_mean"]
     phi_rad = metrics["phi_rad_pm_mean"]
 
-    if behavior == "traveling_polarized":
+    if behavior == "traveling":
         b = _BOUNDS[behavior]
         return phi_trans > b["phi_trans_min"] and phi_tan < b["phi_tan_max"]
     if behavior == "milling":
@@ -77,7 +77,7 @@ def validate_behavior(
     if behavior == "shoaling":
         b = _BOUNDS[behavior]
         return phi_trans < b["phi_trans_max"] and abs(phi_rad) < b["phi_rad_abs_max"]
-    if behavior == "expansion_burst":
+    if behavior == "expansion":
         b = _BOUNDS[behavior]
         return phi_rad > b["phi_rad_min"]
     if behavior == "compaction":

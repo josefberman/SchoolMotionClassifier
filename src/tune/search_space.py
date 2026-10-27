@@ -7,25 +7,82 @@ from typing import Any
 
 from src.labels import CANONICAL
 
-# Ranges are (low, high) inclusive for uniform sampling.
-# Interaction radii r_r=30, r_o=90, r_a=150 are fixed and not tuned.
-# Bounds cover the model defaults and current YAMLs without allowing
-# one-frame π turns or unbounded social torques.
-_PARAM_SPACE: dict[str, tuple[float, float]] = {
-    "w_r": (0.5, 4.0),
-    "w_o": (0.0, 2.5),
-    "w_a": (0.0, 2.5),
-    "w_tan": (0.0, 2.0),
-    "w_rad": (-2.0, 2.0),
-    "sigma_theta": (0.0, 0.25),
-    "s_0": (0.3, 2.0),
-    "sigma_s": (0.0, 0.20),
-    "omega_max": (0.02, 0.30),
-    "a_max": (0.05, 1.50),
-}
+# Interaction radii are fixed via YAML / --r-r --r-o --r-a and are not tuned.
+# sigma_theta and omega_max stay tight to keep heading updates from looking jittery.
 SEARCH_SPACE: dict[str, dict[str, Any]] = {
-    behavior: dict(_PARAM_SPACE) for behavior in CANONICAL
+    "traveling": {
+        "w_r": (0.8, 3.2),
+        "w_o": (1.2, 2.5),
+        "w_a": (0.2, 1.8),
+        "w_tan": (0.0, 0.30),
+        "w_rad": (-0.30, 0.30),
+        "sigma_theta": (0.01, 0.05),
+        "s_0": (0.4, 1.7),
+        "sigma_s": (0.0, 0.08),
+        "omega_max": (0.04, 0.11),
+        "a_max": (0.08, 0.80),
+    },
+    "milling": {
+        "w_r": (0.8, 3.2),
+        "w_o": (0.3, 1.8),
+        "w_a": (0.2, 1.6),
+        "w_tan": (0.5, 2.2),
+        "w_rad": (-0.30, 0.30),
+        "sigma_theta": (0.0, 0.02),
+        "s_0": (0.4, 1.4),
+        "sigma_s": (0.0, 0.04),
+        "omega_max": (0.10, 0.18),
+        "a_max": (0.10, 1.00),
+    },
+    "shoaling": {
+        "w_r": (0.6, 2.8),
+        "w_o": (0.0, 0.55),
+        "w_a": (0.2, 2.0),
+        "w_tan": (0.0, 0.30),
+        "w_rad": (-0.35, 0.35),
+        "sigma_theta": (0.04, 0.12),
+        "s_0": (0.4, 1.8),
+        "sigma_s": (0.0, 0.10),
+        "omega_max": (0.03, 0.10),
+        "a_max": (0.08, 1.20),
+    },
+    "expansion": {
+        "w_r": (0.4, 2.2),
+        "w_o": (0.2, 1.6),
+        "w_a": (0.0, 0.70),
+        "w_tan": (0.0, 0.20),
+        "w_rad": (0.80, 2.20),
+        "sigma_theta": (0.01, 0.06),
+        "s_0": (0.4, 1.6),
+        "sigma_s": (0.0, 0.10),
+        "omega_max": (0.06, 0.16),
+        "a_max": (0.40, 1.60),
+    },
+    "compaction": {
+        "w_r": (0.3, 1.8),
+        "w_o": (0.4, 2.2),
+        "w_a": (0.6, 2.5),
+        "w_tan": (0.0, 0.20),
+        "w_rad": (-2.20, -0.80),
+        "sigma_theta": (0.01, 0.05),
+        "s_0": (0.3, 1.3),
+        "sigma_s": (0.0, 0.08),
+        "omega_max": (0.04, 0.12),
+        "a_max": (0.15, 1.30),
+    },
 }
+SEARCH_PARAM_NAMES: tuple[str, ...] = (
+    "w_r",
+    "w_o",
+    "w_a",
+    "w_tan",
+    "w_rad",
+    "sigma_theta",
+    "s_0",
+    "sigma_s",
+    "omega_max",
+    "a_max",
+)
 
 _INT_KEYS: set[str] = set()
 
@@ -84,6 +141,34 @@ def random_samples(
     if n <= 0 or behavior not in SEARCH_SPACE:
         return []
     return [_sample_node(rng, SEARCH_SPACE[behavior], None, 0.0) for _ in range(n)]
+
+
+def param_bounds(behavior: str) -> list[tuple[str, float, float]]:
+    """Ordered (name, low, high) bounds for SEARCH_SPACE[behavior]."""
+    if behavior not in SEARCH_SPACE:
+        raise KeyError(behavior)
+    bounds: list[tuple[str, float, float]] = []
+    for key, spec in SEARCH_SPACE[behavior].items():
+        if isinstance(spec, tuple) and len(spec) == 2:
+            bounds.append((key, float(spec[0]), float(spec[1])))
+    return bounds
+
+
+def unit_to_overrides(behavior: str, x) -> dict[str, float]:
+    """Map a unit-cube point in [0, 1]^D back to behavior overrides."""
+    ov: dict[str, float] = {}
+    for (key, lo, hi), raw in zip(param_bounds(behavior), x):
+        u = min(1.0, max(0.0, float(raw)))
+        val: float | int = lo + u * (hi - lo)
+        if key in _INT_KEYS:
+            val = int(round(val))
+        ov[key] = val
+    return ov
+
+
+def box_center_unit(behavior: str) -> list[float]:
+    """Unit-cube center (0.5 on every tuned axis)."""
+    return [0.5] * len(param_bounds(behavior))
 
 
 def round_overrides(overrides: dict[str, dict]) -> dict[str, dict]:

@@ -1,0 +1,11 @@
+criterion_label,side,count,25%,50%,75%
+compaction,end,225.0,-1.03,-0.17,0.63
+compaction,start,221.0,-1.07,-0.27,0.57
+expansion,end,100.0,-0.77,0.22,1.28
+expansion,start,106.0,-1.05,0.17,1.19
+milling,end,47.0,-1.05,0.03,1.33
+milling,start,46.0,-1.13,0.0,1.35
+shoaling,end,74.0,-0.85,0.12,1.01
+shoaling,start,72.0,-0.93,0.0,0.86
+traveling,end,144.0,-1.33,0.68,1.77
+traveling,start,145.0,-1.8,-0.93,1.3

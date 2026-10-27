@@ -10,126 +10,6 @@
     },
     {
       "start": "00:33.5",
-      "end": "00:49.5",
-      "label": "traveling"
-    },
-    {
-      "start": "00:49.5",
-      "end": "00:50",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "00:50",
-      "end": "00:53",
-      "label": "compaction"
-    },
-    {
-      "start": "00:53",
-      "end": "00:54",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "00:54",
-      "end": "01:48.5",
-      "label": "traveling"
-    },
-    {
-      "start": "01:48.5",
-      "end": "01:49",
-      "label": "traveling to expansion"
-    },
-    {
-      "start": "01:49",
-      "end": "01:51",
-      "label": "expansion"
-    },
-    {
-      "start": "01:51",
-      "end": "01:52",
-      "label": "expansion to traveling"
-    },
-    {
-      "start": "01:52",
-      "end": "02:28",
-      "label": "traveling"
-    },
-    {
-      "start": "02:28",
-      "end": "02:28.5",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "02:28.5",
-      "end": "02:31",
-      "label": "compaction"
-    },
-    {
-      "start": "02:31",
-      "end": "02:32",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "02:32",
-      "end": "03:05",
-      "label": "traveling"
-    },
-    {
-      "start": "03:05",
-      "end": "03:05.5",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "03:05.5",
-      "end": "03:08",
-      "label": "compaction"
-    },
-    {
-      "start": "03:08",
-      "end": "03:09",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "03:09",
-      "end": "05:53",
-      "label": "traveling"
-    },
-    {
-      "start": "05:53",
-      "end": "05:53.5",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "05:53.5",
-      "end": "05:55.5",
-      "label": "compaction"
-    },
-    {
-      "start": "05:55.5",
-      "end": "05:56.5",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "05:56.5",
-      "end": "06:39",
-      "label": "traveling"
-    },
-    {
-      "start": "06:39",
-      "end": "06:39.5",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "06:39.5",
-      "end": "06:42",
-      "label": "compaction"
-    },
-    {
-      "start": "06:42",
-      "end": "06:43",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "06:43",
       "end": "07:23.5",
       "label": "traveling"
     },
@@ -137,11 +17,6 @@
       "start": "07:23.5",
       "end": "07:25.5",
       "label": "traveling to shoaling"
-    },
-    {
-      "start": "07:25.5",
-      "end": "07:32",
-      "label": "shoaling"
     },
     {
       "start": "07:32",
@@ -152,6 +27,11 @@
       "start": "07:35",
       "end": "07:41",
       "label": "traveling"
+    },
+    {
+      "start": "07:41",
+      "end": "07:44",
+      "label": "compaction"
     },
     {
       "start": "07:44",
@@ -215,66 +95,21 @@
     },
     {
       "start": "08:07",
-      "end": "09:39.5",
+      "end": "09:38.5",
       "label": "traveling"
     },
     {
       "start": "09:48",
-      "end": "09:50",
-      "label": "compaction"
-    },
-    {
-      "start": "09:50",
-      "end": "09:51",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "09:51",
-      "end": "09:54",
-      "label": "traveling"
-    },
-    {
-      "start": "09:54",
-      "end": "09:54.5",
-      "label": "traveling to compaction"
-    },
-    {
-      "start": "09:54.5",
-      "end": "09:56",
-      "label": "compaction"
-    },
-    {
-      "start": "09:56",
-      "end": "09:57",
-      "label": "compaction to traveling"
-    },
-    {
-      "start": "09:57",
-      "end": "11:05.5",
-      "label": "traveling"
-    },
-    {
-      "start": "11:05.5",
-      "end": "11:06",
-      "label": "traveling to expansion"
-    },
-    {
-      "start": "11:06",
-      "end": "11:08",
-      "label": "expansion"
-    },
-    {
-      "start": "11:08",
-      "end": "11:09",
-      "label": "expansion to traveling"
-    },
-    {
-      "start": "11:09",
       "end": "11:27.5",
       "label": "traveling"
     },
     {
-      "start": "11:31.5",
+      "start": "11:28",
+      "end": "11:32",
+      "label": "expansion"
+    },
+    {
+      "start": "11:32.5",
       "end": "11:41.5",
       "label": "traveling"
     },
@@ -285,27 +120,7 @@
     },
     {
       "start": "12:57",
-      "end": "13:28.5",
-      "label": "traveling"
-    },
-    {
-      "start": "13:28.5",
-      "end": "13:29",
-      "label": "traveling to expansion"
-    },
-    {
-      "start": "13:29",
-      "end": "13:32",
-      "label": "expansion"
-    },
-    {
-      "start": "13:32",
-      "end": "13:32.5",
-      "label": "expansion to traveling"
-    },
-    {
-      "start": "13:32.5",
-      "end": "13:42.089",
+      "end": "13:41.5",
       "label": "traveling"
     }
   ]

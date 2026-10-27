@@ -11,8 +11,8 @@ import numpy as np
 from joblib import Parallel, delayed
 
 from scripts.generate_sims import _event_window, _overrides_for
-from src.features.order_params import FEATURE_NAMES
-from src.features.windows import frame_feature_matrix
+from src.features.order_params import AGG_FEATURE_NAMES, FEATURE_NAMES
+from src.features.windows import window_feature_matrix
 from src.labels import CANONICAL
 from src.sim.config import deep_merge
 from src.sim.model_fast import run_simulation_fast
@@ -22,7 +22,7 @@ FEATURE_STD_FLOOR: dict[str, float] = {name: 0.03 for name in FEATURE_NAMES}
 
 
 def _n_samples(block: dict) -> int:
-    return int(block.get("n_frames", block.get("n_segments", block.get("n_clips", 0))))
+    return int(block.get("n_windows", block.get("n_frames", block.get("n_segments", block.get("n_clips", 0)))))
 
 
 def load_calibration_targets(path: Path) -> dict[str, dict]:
@@ -47,8 +47,10 @@ def _aggregate(rows: dict[str, list[np.ndarray]]) -> dict[str, dict]:
                 "mean": float(np.mean(col)),
                 "std": float(np.std(col)),
             }
+        n = int(len(xs))
         report[behavior] = {
-            "n_frames": int(len(xs)),
+            "n_windows": n,
+            "n_frames": n,
             "features": feat_stats,
         }
     return report
@@ -72,9 +74,10 @@ def _run_one(
     es, ee = _event_window(behavior, pos.shape[0])
     if es is not None:
         pos, vel = pos[es:ee], vel[es:ee]
-    if pos.shape[0] < 15:
+    if pos.shape[0] < 5:
         return None
-    return frame_feature_matrix(pos, vel, fps=30.0)
+    X, _ = window_feature_matrix(pos, vel, fps=30.0, names=list(AGG_FEATURE_NAMES))
+    return X if X.shape[0] else None
 
 
 def summarize_behavior_sims(
@@ -96,7 +99,7 @@ def summarize_behavior_sims(
             rows[behavior].append(feat)
     if not rows:
         empty = {name: {"mean": 0.0, "std": 0.0} for name in FEATURE_NAMES}
-        return {behavior: {"n_frames": 0, "features": empty}}
+        return {behavior: {"n_windows": 0, "n_frames": 0, "features": empty}}
     return _aggregate(rows)
 
 
@@ -106,8 +109,9 @@ def behavior_calibration_loss(
 ) -> float:
     """Weighted MSE of sim vs real feature means and stds (lower is better).
 
-    Each Φ contributes equally-weighted mean and std residuals, scaled by the
-    real-frame std so a 0.05 miss costs the same for location and spread.
+    Each Φ contributes equally-weighted mean and std residuals of 5-frame
+    window means, scaled by the real-window std so a 0.05 miss costs the same
+    for location and spread.
     """
     if _n_samples(sim_block) == 0:
         return float("inf")
@@ -141,7 +145,7 @@ def total_calibration_loss(
             continue
         sim_block = sim_report.get(
             behavior,
-            {"n_frames": 0, "features": {}},
+            {"n_windows": 0, "n_frames": 0, "features": {}},
         )
         losses.append(behavior_calibration_loss(sim_block, target_report[behavior]))
     if not losses:

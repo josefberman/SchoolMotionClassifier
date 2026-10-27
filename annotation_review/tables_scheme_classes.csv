@@ -1,0 +1,7 @@
+family,n,total_s,median_s,min_s,n_lt_1s,n_windows_median,share_time
+compaction,133,528.52,4.0,1.5,0,24.0,0.073
+expansion,61,215.37,3.0,1.5,0,18.0,0.03
+milling,36,729.59,12.74,3.5,0,76.0,0.101
+shoaling,52,408.43,5.51,2.0,0,33.0,0.057
+transition,434,1025.95,1.5,0.47,62,9.0,0.142
+traveling,230,4316.02,12.51,1.0,0,75.0,0.597

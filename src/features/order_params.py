@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-# Instantaneous per-frame values are the classifier inputs.
+# Instantaneous per-frame values; classifier inputs are 5-frame window means of these.
 FEATURE_NAMES = (
     "phi_trans",
     "phi_tan",

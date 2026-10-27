@@ -8,10 +8,10 @@ Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a
 
 | Canonical label       | Short      | Description                                        |
 | --------------------- | ---------- | -------------------------------------------------- |
-| `traveling_polarized` | tpol       | High `w_o`, low `sigma_theta`; net translation     |
+| `traveling`           | tpol       | High `w_o`, low `sigma_theta`; net translation     |
 | `milling`             | milling    | `w_tan > 0`; rotation about the school centroid |
 | `shoaling`            | shoaling   | Weak `w_o`, larger `sigma_theta`; low polarization |
-| `expansion_burst`     | expansion  | `w_rad > 0`; outward radial tendency           |
+| `expansion`           | expansion  | `w_rad > 0`; outward radial tendency           |
 | `compaction`          | compaction | `w_rad < 0`; inward radial tendency            |
 
 `fountain_evasion` remains as an unused YAML stub and is not part of the five-class training set.
@@ -20,7 +20,7 @@ Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a
 
 One model for all behaviors. Social interactions use exclusive Couzin zones (`d < r_r` repulsion, `r_r ≤ d < r_o` orientation, `r_o ≤ d < r_a` attraction). Heading noise `epsilon_w_i` and speed noise `epsilon_a_i` are sampled i.i.d. `Normal(0,1)` each step and are not YAML parameters. Arena, `dt`, `burn_in`, and `record_frames` are simulation metadata.
 
-Classifier inputs: instantaneous per-frame **Φ_trans**, **Φ_tan**, **Φ_rad^±**, **Φ_tan^unsigned**, and **Φ_local** (5 nearest neighbors). Training and evaluation inverse-weight classes by frame count.
+Classifier inputs: 5-frame window means of **Φ_trans**, **Φ_tan**, **Φ_rad^±**, **Φ_tan^unsigned**, and **Φ_local** (5 nearest neighbors). Training and evaluation inverse-weight classes by window count.
 
 ## Layout
 
@@ -77,7 +77,7 @@ Outputs land in `sim_datasets/.../renders/` or `results/figures/<behavior>/`.
 
 ## Calibrate / inspect signatures
 
-Summarizes mean/std of the five per-frame order-parameter features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
+Summarizes mean/std of the five 5-frame-window order-parameter features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
 
 ```bash
 python scripts/calibrate_baselines.py
@@ -128,7 +128,7 @@ python scripts/plot_confusion.py
 
 ## Real data notes
 
-- Label aliases live in `annotations/_label_aliases.json` (`polarized`→`traveling_polarized`, `burst`/`spread`→`expansion_burst`, …).
+- Label aliases live in `annotations/_label_aliases.json` (`polarized`→`traveling`, `burst`/`spread`→`expansion`, …).
 - Real annotations are class-imbalanced; fountain/burst are rare; **compaction has no real labels** and is excluded from real eval.
 - Expect a sim↔real domain gap: the model is trained only on simulations; real metrics are a secondary sanity check.
 

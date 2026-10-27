@@ -1,4 +1,4 @@
-"""Random search to match sim order-parameter stats to real calibration targets."""
+"""CMA-ES search to match sim order-parameter stats to real calibration targets."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import cma
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -23,7 +24,12 @@ from src.tune.calibration import (
     summarize_behavior_sims,
     total_calibration_loss,
 )
-from src.tune.search_space import random_samples, round_overrides
+from src.tune.search_space import (
+    box_center_unit,
+    param_bounds,
+    round_overrides,
+    unit_to_overrides,
+)
 
 
 def _feat_progress(sf: dict) -> str:
@@ -69,24 +75,28 @@ def tune_behavior(
     rng: np.random.Generator | None = None,
     show_progress: bool = True,
 ) -> dict[str, Any]:
-    """Random search of overrides for a single behavior against real feature targets."""
+    """CMA-ES over SEARCH_SPACE for one behavior against real feature targets."""
     if behavior not in target_report:
         raise ValueError(f"No target stats for {behavior}")
+    if n_trials <= 0:
+        raise ValueError("n_trials must be positive")
 
     n_values = n_values or [20, 40]
     rng = rng or np.random.default_rng()
     target_block = target_report[behavior]
-    candidates = random_samples(behavior, n_trials, rng)
-    if show_progress:
-        print(f"  random search: {len(candidates)} points in {len(candidates[0]) if candidates else 0}D")
-        print(f"  matching mean+std of {len(FEATURE_NAMES)} frame features: {', '.join(FEATURE_NAMES)}")
-        print(f"  target  {_feat_progress(target_block['features'])}")
+    dim = len(param_bounds(behavior))
+    seed = int(rng.integers(0, 2**31 - 1))
+    x0 = box_center_unit(behavior)
+    sigma0 = 0.3
+    popsize = max(4, min(4 + int(3 * np.log(max(dim, 2))), n_trials))
 
-    best_loss = float("inf")
-    best_overrides: dict = {}
     trials: list[dict[str, Any]] = []
+    best_loss = float("inf")
+    best_overrides: dict[str, float] = {}
 
-    for trial_idx, ov in enumerate(candidates):
+    def _evaluate(x) -> float:
+        nonlocal best_loss, best_overrides
+        ov = unit_to_overrides(behavior, x)
         sim_report = summarize_behavior_sims(
             behavior,
             ov,
@@ -94,30 +104,57 @@ def tune_behavior(
             n_seeds=n_seeds,
             n_jobs=n_jobs,
         )
-        loss = behavior_calibration_loss(sim_report[behavior], target_block)
-        score = score_from_loss(loss)
+        block = sim_report[behavior]
+        loss = behavior_calibration_loss(block, target_block)
         record = {
             "behavior": behavior,
-            "trial": trial_idx + 1,
-            "loss": loss,
-            "score": score,
-            "n_frames": sim_report[behavior]["n_frames"],
+            "trial": len(trials) + 1,
+            "loss": float(loss),
+            "score": score_from_loss(loss),
+            "n_windows": block.get("n_windows", block.get("n_frames", 0)),
             "overrides": round_overrides({behavior: ov})[behavior],
-            "sim_features": sim_report[behavior]["features"],
+            "sim_features": block["features"],
         }
         trials.append(record)
-
         if show_progress:
             print(
-                f"  trial {trial_idx + 1:4d}/{n_trials}  loss={loss:.4f}  "
-                f"{_feat_progress(sim_report[behavior]['features'])}"
+                f"  trial {record['trial']:4d}/{n_trials}  loss={loss:.4f}  "
+                f"{_feat_progress(block['features'])}"
             )
-
         if loss < best_loss:
-            best_loss = loss
+            best_loss = float(loss)
             best_overrides = ov
             if show_progress:
                 print(f"    new best (loss={best_loss:.4f})")
+        return float(loss) if np.isfinite(loss) else 1e6
+
+    if show_progress:
+        tuned = [name for name, _, _ in param_bounds(behavior)]
+        print(f"  CMA-ES: {n_trials} evaluations in {dim}D  (σ0={sigma0}, λ={popsize})")
+        print(f"  search  {', '.join(tuned)}")
+        print(f"  matching mean+std of {len(FEATURE_NAMES)} 5-frame window features: {', '.join(FEATURE_NAMES)}")
+        print(f"  target  {_feat_progress(target_block['features'])}")
+
+    es = cma.CMAEvolutionStrategy(
+        x0,
+        sigma0,
+        {
+            "bounds": [0.0, 1.0],
+            "maxfevals": n_trials,
+            "popsize": popsize,
+            "seed": seed,
+            "verbose": -9,
+        },
+    )
+    while not es.stop() and len(trials) < n_trials:
+        xs = es.ask()
+        remaining = n_trials - len(trials)
+        if remaining < len(xs):
+            for x in xs[:remaining]:
+                _evaluate(x)
+            break
+        losses = [_evaluate(x) for x in xs]
+        es.tell(xs, losses)
 
     return {
         "behavior": behavior,

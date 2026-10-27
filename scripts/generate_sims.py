@@ -41,10 +41,10 @@ def _event_window(behavior: str, n_frames: int = 150) -> tuple[int | None, int |
 
 
 _LABEL_RAW = {
-    "traveling_polarized": "polarized",
+    "traveling": "traveling",
     "milling": "milling",
     "shoaling": "shoaling",
-    "expansion_burst": "e+",
+    "expansion": "e+",
     "compaction": "e-",
 }
 

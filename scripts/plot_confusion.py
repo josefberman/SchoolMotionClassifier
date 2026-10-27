@@ -17,10 +17,10 @@ sys.path.insert(0, str(ROOT))
 from src.labels import ordered_labels
 
 PLOT_NAMES = {
-    "traveling_polarized": "traveling",
+    "traveling": "traveling",
     "milling": "milling",
     "shoaling": "shoaling",
-    "expansion_burst": "expansion",
+    "expansion": "expansion",
     "compaction": "compaction",
 }
 
@@ -127,40 +127,7 @@ def main() -> None:
     real_json = ROOT / "results" / "real_eval_metrics.json"
     _rewrite_json_order(sim_json)
     _rewrite_json_order(real_json)
-    # Current train run does not write a sim test matrix; reuse the last plotted counts.
-    sim_cm = None
-    sim_labels = None
-    if sim_json.exists():
-        with open(sim_json, encoding="utf-8") as f:
-            sim_data = json.load(f)
-        if "confusion_matrix" in sim_data:
-            sim_cm = np.asarray(sim_data["confusion_matrix"], dtype=float)
-            sim_labels = list(sim_data.get("confusion_labels", []))
-    if sim_cm is None:
-        sim_labels = [
-            "traveling_polarized",
-            "milling",
-            "shoaling",
-            "expansion_burst",
-            "compaction",
-        ]
-        sim_cm = np.array(
-            [
-                [192, 0, 0, 3, 4],
-                [0, 185, 7, 0, 0],
-                [3, 6, 181, 0, 9],
-                [5, 1, 7, 187, 0],
-                [6, 0, 6, 0, 188],
-            ],
-            dtype=float,
-        )
-    plot_cm(
-        sim_json,
-        ROOT / "results" / "sim_confusion.png",
-        "Sim test confusion",
-        cm=sim_cm,
-        labels=sim_labels,
-    )
+    plot_cm(sim_json, ROOT / "results" / "sim_confusion.png", "Sim test confusion")
     plot_cm(real_json, ROOT / "results" / "real_confusion.png", "Real annotation confusion")
 
 

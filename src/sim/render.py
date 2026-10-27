@@ -22,6 +22,8 @@ FISH_LEN = 15.0
 FISH_WIDTH = 3.0
 VIDEO_FISH_LEN = FISH_LEN
 STILL_FISH_LEN = FISH_LEN
+FRAME_DPI = 300
+FRAME_FIGSIZE = (3.5, 3.8)
 
 # Template spans x in [-0.5, 0.5] (length) and y in [-0.5, 0.5] at the widest point (width).
 _FISH_SHAPE = np.array([
@@ -168,8 +170,8 @@ def save_still(
     center: Sequence[float] | None = None,
     half_extent: float | None = None,
     title: str | None = None,
-    dpi: int = 300,
-    figsize: tuple[float, float] = (3.5, 3.8),
+    dpi: int = FRAME_DPI,
+    figsize: tuple[float, float] = FRAME_FIGSIZE,
     predator: np.ndarray | None = None,
 ) -> Path:
     t = positions.shape[0]
@@ -236,8 +238,8 @@ def save_video(
     center: Sequence[float] | None = None,
     half_extent: float | None = None,
     title: str | None = None,
-    dpi: int = 150,
-    figsize: tuple[float, float] = (4.0, 4.3),
+    dpi: int = FRAME_DPI,
+    figsize: tuple[float, float] = FRAME_FIGSIZE,
     arrow_scale: float = 0.35,
 ) -> Path:
     from matplotlib.animation import FFMpegWriter, FuncAnimation, PillowWriter
@@ -272,7 +274,7 @@ def save_video(
     logging.getLogger("matplotlib.animation").setLevel(logging.ERROR)
     for codec in ("mpeg4", "libx264", "h264", "libopenh264"):
         try:
-            writer = FFMpegWriter(fps=out_fps, bitrate=1800, codec=codec,
+            writer = FFMpegWriter(fps=out_fps, bitrate=6000, codec=codec,
                                   extra_args=["-loglevel", "error"])
             anim.save(str(written), writer=writer, dpi=dpi)
             if written.exists() and written.stat().st_size > 1000:

@@ -23,8 +23,8 @@ DEFAULTS: dict[str, Any] = {
         "wall_margin": 40.0,
         "w_wall": 2.5,
     },
-    "r_r": 30.0,
-    "r_o": 90.0,
+    "r_r": 50.0,
+    "r_o": 100.0,
     "r_a": 150.0,
     "w_r": 1.6,
     "w_o": 1.0,
@@ -36,7 +36,7 @@ DEFAULTS: dict[str, Any] = {
     "sigma_s": 0.05,
     "omega_max": 0.45,
     "a_max": 0.35,
-    "burn_in": 300,
+    "burn_in": 800,
     "record_frames": 150,
 }
 

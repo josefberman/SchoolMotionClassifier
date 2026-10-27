@@ -1,0 +1,542 @@
+{
+  "dataset": "0200",
+  "fps": 29.97,
+  "source": "trajectory-assisted annotation",
+  "segments": [
+    {
+      "start": "00:04",
+      "end": "00:12",
+      "label": "traveling"
+    },
+    {
+      "start": "00:12",
+      "end": "00:14",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "00:14",
+      "end": "00:18.5",
+      "label": "compaction"
+    },
+    {
+      "start": "00:18.5",
+      "end": "00:22",
+      "label": "compaction to expansion"
+    },
+    {
+      "start": "00:22",
+      "end": "00:25.5",
+      "label": "expansion"
+    },
+    {
+      "start": "00:25.5",
+      "end": "00:26.5",
+      "label": "expansion to compaction"
+    },
+    {
+      "start": "00:26.5",
+      "end": "00:30.5",
+      "label": "compaction"
+    },
+    {
+      "start": "00:30.5",
+      "end": "00:32",
+      "label": "compaction to expansion"
+    },
+    {
+      "start": "00:32",
+      "end": "00:35.5",
+      "label": "expansion"
+    },
+    {
+      "start": "00:35.5",
+      "end": "00:37",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "00:37",
+      "end": "00:40",
+      "label": "traveling"
+    },
+    {
+      "start": "00:40",
+      "end": "00:41",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "00:41",
+      "end": "00:45",
+      "label": "compaction"
+    },
+    {
+      "start": "00:45",
+      "end": "00:51",
+      "label": "compaction to milling"
+    },
+    {
+      "start": "00:51",
+      "end": "01:02.5",
+      "label": "milling"
+    },
+    {
+      "start": "01:02.5",
+      "end": "01:06",
+      "label": "milling to expansion"
+    },
+    {
+      "start": "01:06",
+      "end": "01:09",
+      "label": "expansion"
+    },
+    {
+      "start": "01:09",
+      "end": "01:10.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "01:10.5",
+      "end": "01:13.5",
+      "label": "traveling"
+    },
+    {
+      "start": "01:13.5",
+      "end": "01:15",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "01:15",
+      "end": "01:19.5",
+      "label": "compaction"
+    },
+    {
+      "start": "01:19.5",
+      "end": "01:23.5",
+      "label": "compaction to shoaling"
+    },
+    {
+      "start": "01:23.5",
+      "end": "01:29",
+      "label": "shoaling"
+    },
+    {
+      "start": "01:29",
+      "end": "01:34",
+      "label": "shoaling to milling"
+    },
+    {
+      "start": "01:34",
+      "end": "01:54.5",
+      "label": "milling"
+    },
+    {
+      "start": "01:54.5",
+      "end": "01:56.5",
+      "label": "milling to expansion"
+    },
+    {
+      "start": "01:56.5",
+      "end": "02:00.5",
+      "label": "expansion"
+    },
+    {
+      "start": "02:00.5",
+      "end": "02:04",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "02:04",
+      "end": "02:06",
+      "label": "traveling"
+    },
+    {
+      "start": "02:06",
+      "end": "02:07",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "02:07",
+      "end": "02:09.5",
+      "label": "expansion"
+    },
+    {
+      "start": "02:09.5",
+      "end": "02:11",
+      "label": "expansion to compaction"
+    },
+    {
+      "start": "02:11",
+      "end": "02:16",
+      "label": "compaction"
+    },
+    {
+      "start": "02:16",
+      "end": "02:18",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "02:18",
+      "end": "02:20.5",
+      "label": "traveling"
+    },
+    {
+      "start": "02:34",
+      "end": "03:03",
+      "label": "traveling"
+    },
+    {
+      "start": "03:03",
+      "end": "03:04.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "03:04.5",
+      "end": "03:09.5",
+      "label": "compaction"
+    },
+    {
+      "start": "03:25",
+      "end": "03:30",
+      "label": "expansion"
+    },
+    {
+      "start": "03:30",
+      "end": "03:31",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "03:31",
+      "end": "03:35.5",
+      "label": "traveling"
+    },
+    {
+      "start": "03:35.5",
+      "end": "03:37",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "03:37",
+      "end": "03:42",
+      "label": "compaction"
+    },
+    {
+      "start": "03:42",
+      "end": "03:50",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "03:50",
+      "end": "03:58",
+      "label": "traveling"
+    },
+    {
+      "start": "03:58",
+      "end": "03:59.5",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "03:59.5",
+      "end": "04:03",
+      "label": "expansion"
+    },
+    {
+      "start": "04:03",
+      "end": "04:04.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "04:04.5",
+      "end": "04:09",
+      "label": "traveling"
+    },
+    {
+      "start": "04:09",
+      "end": "04:10.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "04:10.5",
+      "end": "04:13",
+      "label": "compaction"
+    },
+    {
+      "start": "04:13",
+      "end": "04:15",
+      "label": "compaction to milling"
+    },
+    {
+      "start": "04:15",
+      "end": "04:27.5",
+      "label": "milling"
+    },
+    {
+      "start": "04:27.5",
+      "end": "04:32",
+      "label": "milling to expansion"
+    },
+    {
+      "start": "04:32",
+      "end": "04:36",
+      "label": "expansion"
+    },
+    {
+      "start": "04:36",
+      "end": "04:39",
+      "label": "expansion to compaction"
+    },
+    {
+      "start": "04:39",
+      "end": "04:44",
+      "label": "compaction"
+    },
+    {
+      "start": "04:44",
+      "end": "04:46",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "04:46",
+      "end": "04:54.5",
+      "label": "traveling"
+    },
+    {
+      "start": "04:54.5",
+      "end": "04:56",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "04:56",
+      "end": "04:59.5",
+      "label": "expansion"
+    },
+    {
+      "start": "04:59.5",
+      "end": "05:00.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "05:00.5",
+      "end": "05:03",
+      "label": "traveling"
+    },
+    {
+      "start": "05:03",
+      "end": "05:04",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "05:04",
+      "end": "05:07",
+      "label": "compaction"
+    },
+    {
+      "start": "05:07",
+      "end": "05:08.5",
+      "label": "compaction to milling"
+    },
+    {
+      "start": "05:08.5",
+      "end": "05:44",
+      "label": "milling"
+    },
+    {
+      "start": "05:44",
+      "end": "05:50",
+      "label": "milling to traveling"
+    },
+    {
+      "start": "05:50",
+      "end": "05:52.5",
+      "label": "traveling"
+    },
+    {
+      "start": "05:52.5",
+      "end": "05:53.5",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "05:53.5",
+      "end": "05:59.5",
+      "label": "compaction"
+    },
+    {
+      "start": "05:59.5",
+      "end": "06:01",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "06:01",
+      "end": "06:18.5",
+      "label": "traveling"
+    },
+    {
+      "start": "06:18.5",
+      "end": "06:20",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "06:20",
+      "end": "06:24.5",
+      "label": "compaction"
+    },
+    {
+      "start": "06:24.5",
+      "end": "06:29",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "06:29",
+      "end": "06:40",
+      "label": "traveling"
+    },
+    {
+      "start": "06:40",
+      "end": "06:41.5",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "06:41.5",
+      "end": "06:44.5",
+      "label": "expansion"
+    },
+    {
+      "start": "06:44.5",
+      "end": "06:45.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "06:45.5",
+      "end": "06:58",
+      "label": "traveling"
+    },
+    {
+      "start": "06:58",
+      "end": "06:59",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "06:59",
+      "end": "07:06.5",
+      "label": "compaction"
+    },
+    {
+      "start": "07:06.5",
+      "end": "07:08",
+      "label": "compaction to shoaling"
+    },
+    {
+      "start": "07:08",
+      "end": "07:11",
+      "label": "shoaling"
+    },
+    {
+      "start": "07:11",
+      "end": "07:14",
+      "label": "shoaling to expansion"
+    },
+    {
+      "start": "07:14",
+      "end": "07:20",
+      "label": "expansion"
+    },
+    {
+      "start": "07:20",
+      "end": "07:21.5",
+      "label": "expansion to traveling"
+    },
+    {
+      "start": "07:21.5",
+      "end": "07:24.5",
+      "label": "traveling"
+    },
+    {
+      "start": "07:24.5",
+      "end": "07:26",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "07:26",
+      "end": "07:30.5",
+      "label": "compaction"
+    },
+    {
+      "start": "07:30.5",
+      "end": "07:32",
+      "label": "compaction to traveling"
+    },
+    {
+      "start": "07:32",
+      "end": "07:40",
+      "label": "traveling"
+    },
+    {
+      "start": "08:24",
+      "end": "08:35.5",
+      "label": "traveling"
+    },
+    {
+      "start": "08:35.5",
+      "end": "08:38",
+      "label": "traveling to expansion"
+    },
+    {
+      "start": "08:38",
+      "end": "08:45.5",
+      "label": "expansion"
+    },
+    {
+      "start": "08:45.5",
+      "end": "08:49",
+      "label": "expansion to compaction"
+    },
+    {
+      "start": "08:49",
+      "end": "08:55.5",
+      "label": "compaction"
+    },
+    {
+      "start": "08:55.5",
+      "end": "08:57",
+      "label": "compaction to milling"
+    },
+    {
+      "start": "08:57",
+      "end": "09:01.5",
+      "label": "milling"
+    },
+    {
+      "start": "09:01.5",
+      "end": "09:10",
+      "label": "milling to traveling"
+    },
+    {
+      "start": "09:10",
+      "end": "09:13.5",
+      "label": "traveling"
+    },
+    {
+      "start": "09:13.5",
+      "end": "09:15",
+      "label": "traveling to compaction"
+    },
+    {
+      "start": "09:15",
+      "end": "09:18.5",
+      "label": "compaction"
+    },
+    {
+      "start": "09:46.5",
+      "end": "09:52.5",
+      "label": "compaction"
+    },
+    {
+      "start": "09:52.5",
+      "end": "09:54.5",
+      "label": "compaction to shoaling"
+    },
+    {
+      "start": "09:54.5",
+      "end": "10:00.567",
+      "label": "shoaling"
+    }
+  ]
+}

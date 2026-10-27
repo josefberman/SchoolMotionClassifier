@@ -1,4 +1,4 @@
-"""Evaluate trained classifier on real annotated segments."""
+"""Evaluate trained classifier on 5-frame windows of real annotated segments."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def eval_real(
     X_all, y_all, _, _meta_all = build_real_xy(
         include_transitions=include_transitions,
         stable_only=stable_only,
-        mode="frame",
+        mode="windows",
     )
     known = set(le.classes_)
     known_mask = np.array([yi in known for yi in y_all])

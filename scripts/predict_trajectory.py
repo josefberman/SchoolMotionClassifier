@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Predict a behavior label for every frame of a trajectory CSV/H5."""
+"""Predict a behavior label for every 5-frame window of a trajectory CSV/H5."""
 
 from __future__ import annotations
 
@@ -17,8 +17,9 @@ from src.classify.predict import predict_trajectory
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Read a fish-trajectory CSV/H5, predict a behavior per frame with a "
-            "trained classifier, and write the same file type plus a label column."
+            "Read a fish-trajectory CSV/H5, predict a behavior per 5-frame window with a "
+            "trained classifier, and write the same file type plus a label column "
+            "(window labels are repeated onto the frames they cover)."
         )
     )
     parser.add_argument("trajectory", type=Path, help="Input .csv / .h5 / .hdf5 trajectory")

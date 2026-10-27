@@ -1,0 +1,6 @@
+label,compaction,expansion,milling,shoaling,traveling
+compaction,121,0,0,1,11
+expansion,0,48,3,3,7
+milling,0,0,36,0,0
+shoaling,1,0,2,49,0
+traveling,5,10,2,1,212

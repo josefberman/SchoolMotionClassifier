@@ -7,7 +7,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from sklearn.metrics import f1_score, make_scorer
+from sklearn.metrics import confusion_matrix, f1_score, make_scorer
 from sklearn.model_selection import GridSearchCV, PredefinedSplit, StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
@@ -31,19 +31,34 @@ def _count_by_kind(labels: np.ndarray) -> dict[str, int]:
 
 
 def _macro_f1(y_true, y_pred) -> float:
-    present = np.unique(y_true)
-    return float(f1_score(y_true, y_pred, average="macro", labels=present, zero_division=0))
+    return float(f1_score(y_true, y_pred, average="macro", zero_division=0))
+
+
+def _xgb(n_classes: int, n_jobs: int = 1, **params) -> XGBClassifier:
+    return XGBClassifier(
+        objective="multi:softprob",
+        num_class=n_classes,
+        random_state=42,
+        n_jobs=n_jobs,
+        **params,
+    )
 
 
 def _inv_class_weights(y: np.ndarray) -> np.ndarray:
-    """Weight each sample by 1/n_class so every class contributes equally."""
+    """Balance classes with mean weight 1 so XGBoost min_child_weight still splits.
+
+    Raw 1/n_k makes each class sum to 1. With ~5k windows per class that is
+    ~2e-4 per sample, below XGBoost's default min_child_weight=1, so trees
+    stay stumps and the model collapses to one class.
+    """
     _, inv, counts = np.unique(y, return_inverse=True, return_counts=True)
-    return 1.0 / counts[inv].astype(np.float64)
+    w = 1.0 / counts[inv].astype(np.float64)
+    return w * (len(y) / w.sum())
 
 
 def train_classifier(
     out_dir: Path | None = None,
-    mode: str = "frame",
+    mode: str = "windows",
     manifest_path: Path | None = None,
     sim_root: Path | None = None,
     include_transitions: bool | None = None,
@@ -110,7 +125,7 @@ def train_classifier(
     print("param grid:", PARAM_GRID)
 
     search = GridSearchCV(
-        XGBClassifier(random_state=42, n_jobs=1),
+        _xgb(len(le.classes_), n_jobs=1),
         PARAM_GRID,
         scoring=make_scorer(_macro_f1),
         cv=cv,
@@ -119,9 +134,21 @@ def train_classifier(
         verbose=3,
     )
     search.fit(X_search, y_search, sample_weight=w_search)
-    model = XGBClassifier(**search.best_params_, random_state=42, n_jobs=-1)
+
+    if n_test:
+        y_tr_enc = le.transform(y_tr)
+        holdout = _xgb(len(le.classes_), n_jobs=-1, **search.best_params_)
+        holdout.fit(X_tr, y_tr_enc, sample_weight=_inv_class_weights(y_tr_enc))
+        y_pred = le.inverse_transform(holdout.predict(X_te))
+        test_f1 = float(f1_score(y_te, y_pred, average="macro", labels=eval_labels, zero_division=0))
+        test_cm = confusion_matrix(y_te, y_pred, labels=eval_labels).tolist()
+    else:
+        test_f1 = float(search.best_score_)
+        test_cm = []
+
+    model = _xgb(len(le.classes_), n_jobs=-1, **search.best_params_)
     model.fit(X_sim, yt, sample_weight=w_sim)
-    print(f"best_params={search.best_params_}  {score_name}={search.best_score_:.4f}")
+    print(f"best_params={search.best_params_}  grid={search.best_score_:.4f}  {score_name}={test_f1:.4f}")
 
     report: dict = {
         "n_train": n_train or int(len(X_sim)),
@@ -132,9 +159,13 @@ def train_classifier(
         "train_counts": _count_by_kind(y_sim),
         "features": feat_names,
         "best_params": search.best_params_,
-        "best_sim_macro_f1": float(search.best_score_),
-        "sim_test_macro_f1": float(search.best_score_),
+        "best_sim_macro_f1": test_f1,
+        "sim_test_macro_f1": test_f1,
+        "grid_search_macro_f1": float(search.best_score_),
     }
+    if n_test:
+        report["confusion_matrix"] = test_cm
+        report["confusion_labels"] = eval_labels
 
     model_path = out_dir / "classifier.joblib"
     metrics_path = out_dir / "sim_test_metrics.json"

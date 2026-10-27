@@ -13,7 +13,7 @@ from src.classify.eval import eval_real
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate classifier on real annotated segments.")
+    parser = argparse.ArgumentParser(description="Evaluate classifier on 5-frame windows of real annotated segments.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--transitions",
