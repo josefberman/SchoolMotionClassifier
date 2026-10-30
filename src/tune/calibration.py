@@ -11,14 +11,16 @@ import numpy as np
 from joblib import Parallel, delayed
 
 from scripts.generate_sims import _event_window, _overrides_for
-from src.features.order_params import AGG_FEATURE_NAMES, FEATURE_NAMES
+from src.features.order_params import AGG_FEATURE_NAMES, CALIBRATION_FEATURE_NAMES
 from src.features.windows import window_feature_matrix
 from src.labels import CANONICAL
 from src.sim.config import deep_merge
 from src.sim.model_fast import run_simulation_fast
 
-FEATURE_WEIGHTS: dict[str, float] = {name: 1.0 for name in FEATURE_NAMES}
-FEATURE_STD_FLOOR: dict[str, float] = {name: 0.03 for name in FEATURE_NAMES}
+FEATURE_WEIGHTS: dict[str, float] = {name: 1.0 for name in CALIBRATION_FEATURE_NAMES}
+FEATURE_STD_FLOOR: dict[str, float] = {
+    name: (0.05 if name.endswith("_rate") else 0.03) for name in CALIBRATION_FEATURE_NAMES
+}
 
 
 def _n_samples(block: dict) -> int:
@@ -41,7 +43,7 @@ def _aggregate(rows: dict[str, list[np.ndarray]]) -> dict[str, dict]:
     for behavior in sorted(rows):
         xs = np.vstack(rows[behavior])
         feat_stats = {}
-        for i, name in enumerate(FEATURE_NAMES):
+        for i, name in enumerate(CALIBRATION_FEATURE_NAMES):
             col = xs[:, i]
             feat_stats[name] = {
                 "mean": float(np.mean(col)),
@@ -98,7 +100,7 @@ def summarize_behavior_sims(
         if feat is not None:
             rows[behavior].append(feat)
     if not rows:
-        empty = {name: {"mean": 0.0, "std": 0.0} for name in FEATURE_NAMES}
+        empty = {name: {"mean": 0.0, "std": 0.0} for name in CALIBRATION_FEATURE_NAMES}
         return {behavior: {"n_windows": 0, "n_frames": 0, "features": empty}}
     return _aggregate(rows)
 
@@ -109,18 +111,22 @@ def behavior_calibration_loss(
 ) -> float:
     """Weighted MSE of sim vs real feature means and stds (lower is better).
 
-    Each Φ contributes equally-weighted mean and std residuals of 5-frame
-    window means, scaled by the real-window std so a 0.05 miss costs the same
-    for location and spread.
+    Each window feature (Φ mean and 5-point dΦ/dt) contributes equally-weighted
+    mean and std residuals, scaled by the real-window std. Targets that do not
+    yet store a feature are skipped.
     """
     if _n_samples(sim_block) == 0:
         return float("inf")
 
     total = 0.0
     n = 0
-    for feat in FEATURE_NAMES:
-        stats_s = sim_block["features"][feat]
-        stats_t = target_block["features"][feat]
+    target_feats = target_block["features"]
+    sim_feats = sim_block["features"]
+    for feat in CALIBRATION_FEATURE_NAMES:
+        if feat not in target_feats or feat not in sim_feats:
+            continue
+        stats_s = sim_feats[feat]
+        stats_t = target_feats[feat]
         sm = float(stats_s["mean"])
         ss = float(stats_s["std"])
         tm = float(stats_t["mean"])

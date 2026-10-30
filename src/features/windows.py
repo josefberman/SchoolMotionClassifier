@@ -7,8 +7,8 @@ import numpy as np
 from src.features.order_params import (
     AGG_FEATURE_NAMES,
     FEATURE_NAMES,
-    aggregate_series,
     compute_order_params_series,
+    five_point_derivative,
 )
 
 # Classifier samples are non-overlapping 5-frame windows of instantaneous Φ.
@@ -21,8 +21,11 @@ def segment_feature_vector(
     velocities: np.ndarray,
     fps: float = 30.0,
 ) -> dict[str, float]:
-    series = compute_order_params_series(positions, velocities)
-    return aggregate_series(series, fps=fps)
+    """Mean of the 5-frame window features that fit in the segment."""
+    feats = sliding_window_features(positions, velocities, fps=fps)
+    if not feats:
+        return {name: 0.0 for name in AGG_FEATURE_NAMES}
+    return {name: float(np.mean([feat[name] for feat in feats])) for name in AGG_FEATURE_NAMES}
 
 
 def iter_window_bounds(
@@ -31,22 +34,32 @@ def iter_window_bounds(
     hop_frames: int = HOP_FRAMES,
     fps: float = 30.0,
 ) -> list[tuple[int, int]]:
-    """[start, end) spans of `window_frames` frames, stepped by `hop_frames`."""
+    """Non-overlapping [start, end) spans of exactly 5 frames."""
     del fps
-    w = max(2, int(window_frames))
-    h = max(1, int(hop_frames))
+    w = int(window_frames)
+    hop = int(hop_frames)
+    if w != WINDOW_FRAMES or hop != HOP_FRAMES:
+        raise ValueError(
+            f"Windows are {WINDOW_FRAMES} frames stepped by {HOP_FRAMES}, got {w} / {hop}"
+        )
     t = int(n_frames)
     if t < w:
-        return [(0, t)] if t >= 2 else []
-    return [(start, start + w) for start in range(0, t - w + 1, h)]
+        return []
+    return [(start, start + w) for start in range(0, t - w + 1, hop)]
 
 
-def _window_feat_from_series(series: dict[str, np.ndarray], start: int, end: int) -> dict[str, float]:
+def _window_feat_from_series(
+    series: dict[str, np.ndarray],
+    start: int,
+    end: int,
+    fps: float,
+) -> dict[str, float]:
     feat: dict[str, float] = {}
     for key, arr in series.items():
         sl = arr[start:end]
         feat[f"{key}_mean"] = float(np.mean(sl))
         feat[f"{key}_std"] = float(np.std(sl))
+        feat[f"{key}_rate"] = five_point_derivative(sl, fps)
     return feat
 
 
@@ -62,8 +75,8 @@ def sliding_window_features(
     )
     series = compute_order_params_series(positions, velocities)
     if not bounds:
-        return [aggregate_series(series, fps=fps)]
-    return [_window_feat_from_series(series, a, b) for a, b in bounds]
+        return []
+    return [_window_feat_from_series(series, a, b, fps) for a, b in bounds]
 
 
 def window_feature_matrix(
@@ -75,16 +88,15 @@ def window_feature_matrix(
     hop_frames: int = HOP_FRAMES,
     fps: float = 30.0,
 ) -> tuple[np.ndarray, list[tuple[int, int]]]:
-    """One row per 5-frame window: mean Φ over the window. Also returns [start, end) spans."""
+    """One row per 5-frame window: mean Φ and its 5-point dΦ/dt. Also returns [start, end) spans."""
     names = names or list(AGG_FEATURE_NAMES)
     bounds = iter_window_bounds(
         positions.shape[0], window_frames=window_frames, hop_frames=hop_frames, fps=fps
     )
     series = compute_order_params_series(positions, velocities)
     if not bounds:
-        feat = aggregate_series(series, fps=fps)
-        return feature_dict_to_array(feat, names)[None, :], [(0, int(positions.shape[0]))]
-    rows = [feature_dict_to_array(_window_feat_from_series(series, a, b), names) for a, b in bounds]
+        return np.zeros((0, len(names))), []
+    rows = [feature_dict_to_array(_window_feat_from_series(series, a, b, fps), names) for a, b in bounds]
     return np.vstack(rows), bounds
 
 

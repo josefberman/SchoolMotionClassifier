@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT))
 import yaml
 
 from src.labels import BEHAVIOR_SHORT, canonicalize
-from src.features.order_params import FEATURE_NAMES
+from src.features.order_params import CALIBRATION_FEATURE_NAMES
 from src.sim.config import CONFIG_DIR, deep_merge, validate_radii
 from src.tune.feature_match import BEST_PATH, tune_all_behaviors
 
@@ -49,7 +49,9 @@ def _print_feature_summary(summary: dict) -> None:
         if tgt is None:
             continue
         print(f"\n{behavior}:")
-        for feat in FEATURE_NAMES:
+        for feat in CALIBRATION_FEATURE_NAMES:
+            if feat not in block or feat not in tgt:
+                continue
             sm = block[feat]["mean"]
             ss = block[feat]["std"]
             tm = tgt[feat]["mean"]

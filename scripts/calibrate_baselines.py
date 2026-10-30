@@ -19,7 +19,7 @@ from src.features.dataset import (
     load_manifest,
     load_real_segments,
 )
-from src.features.order_params import AGG_FEATURE_NAMES, FEATURE_NAMES
+from src.features.order_params import AGG_FEATURE_NAMES, CALIBRATION_FEATURE_NAMES
 from src.features.windows import window_feature_matrix
 from src.labels import CANONICAL, is_transition
 from src.sim.io import load_trajectory_csv
@@ -34,7 +34,7 @@ def _aggregate(
     for behavior in sorted(rows):
         xs = np.vstack(rows[behavior])
         feat_stats = {}
-        for i, name in enumerate(FEATURE_NAMES):
+        for i, name in enumerate(CALIBRATION_FEATURE_NAMES):
             col = xs[:, i]
             feat_stats[name] = {
                 "mean": float(np.mean(col)),
@@ -115,8 +115,10 @@ def _print_report(report: dict[str, dict], *, title: str) -> None:
         n_seg = block.get("n_segments")
         extra = f", {n_seg} segments" if n_seg else ""
         print(f"{behavior}  (n={n} windows{extra})")
-        for name in FEATURE_NAMES:
-            stats = block["features"][name]
+        for name in CALIBRATION_FEATURE_NAMES:
+            stats = block["features"].get(name)
+            if stats is None:
+                continue
             print(f"  {name:16s}  mean={stats['mean']:+.4f}  std={stats['std']:.4f}")
         print()
 

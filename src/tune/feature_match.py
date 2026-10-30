@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.features.order_params import FEATURE_NAMES
+from src.features.order_params import CALIBRATION_FEATURE_NAMES
 from src.labels import CANONICAL, canonicalize
 from src.tune.calibration import (
     behavior_calibration_loss,
@@ -34,11 +34,13 @@ from src.tune.search_space import (
 
 def _feat_progress(sf: dict) -> str:
     parts = []
-    for name in FEATURE_NAMES:
+    for name in CALIBRATION_FEATURE_NAMES:
+        if name not in sf:
+            continue
         short = name.removeprefix("phi_")
         m = sf[name]["mean"]
         s = sf[name]["std"]
-        if name == "phi_rad_pm":
+        if name == "phi_rad_pm" or name.endswith("_rate"):
             parts.append(f"{short}={m:+.3f}±{s:.3f}")
         else:
             parts.append(f"{short}={m:.3f}±{s:.3f}")
@@ -132,7 +134,10 @@ def tune_behavior(
         tuned = [name for name, _, _ in param_bounds(behavior)]
         print(f"  CMA-ES: {n_trials} evaluations in {dim}D  (σ0={sigma0}, λ={popsize})")
         print(f"  search  {', '.join(tuned)}")
-        print(f"  matching mean+std of {len(FEATURE_NAMES)} 5-frame window features: {', '.join(FEATURE_NAMES)}")
+        print(
+            f"  matching mean+std of {len(CALIBRATION_FEATURE_NAMES)} 5-frame window features: "
+            f"{', '.join(CALIBRATION_FEATURE_NAMES)}"
+        )
         print(f"  target  {_feat_progress(target_block['features'])}")
 
     es = cma.CMAEvolutionStrategy(

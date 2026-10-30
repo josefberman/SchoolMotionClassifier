@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from src.features.order_params import AGG_FEATURE_NAMES
-from src.features.windows import window_feature_matrix
+from src.features.windows import WINDOW_FRAMES, window_feature_matrix
 from src.sim.io import load_trajectory_table, pos_vel_from_table, save_trajectory_table
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,6 +39,8 @@ def predict_trajectory(
     names = list(bundle.get("feature_names") or AGG_FEATURE_NAMES)
 
     X, bounds = window_feature_matrix(pos, vel, fps=fps, names=names)
+    if X.shape[0] == 0:
+        raise ValueError(f"Need at least {WINDOW_FRAMES} frames for a window, got {pos.shape[0]}")
     window_pred = le.inverse_transform(np.asarray(model.predict(X)))
     labels = np.empty(pos.shape[0], dtype=object)
     labels[:] = window_pred[-1] if len(window_pred) else ""

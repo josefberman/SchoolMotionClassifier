@@ -8,7 +8,8 @@ from typing import Any
 from src.labels import CANONICAL
 
 # Interaction radii are fixed via YAML / --r-r --r-o --r-a and are not tuned.
-# sigma_theta and omega_max stay tight to keep heading updates from looking jittery.
+# sigma_theta stays tight to keep heading updates from looking jittery.
+# omega_max is capped at 0.1 for every behavior.
 SEARCH_SPACE: dict[str, dict[str, Any]] = {
     "traveling": {
         "w_r": (0.8, 3.2),
@@ -18,9 +19,9 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_rad": (-0.30, 0.30),
         "sigma_theta": (0.01, 0.05),
         "s_0": (0.4, 1.7),
-        "sigma_s": (0.0, 0.08),
-        "omega_max": (0.04, 0.11),
-        "a_max": (0.08, 0.80),
+        "sigma_s": (0.0, 0.16),
+        "omega_max": (0.04, 0.10),
+        "a_max": (0.0, 1.20),
     },
     "milling": {
         "w_r": (0.8, 3.2),
@@ -30,9 +31,9 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_rad": (-0.30, 0.30),
         "sigma_theta": (0.0, 0.02),
         "s_0": (0.4, 1.4),
-        "sigma_s": (0.0, 0.04),
-        "omega_max": (0.10, 0.18),
-        "a_max": (0.10, 1.00),
+        "sigma_s": (0.0, 0.08),
+        "omega_max": (0.08, 0.10),
+        "a_max": (0.0, 1.50),
     },
     "shoaling": {
         "w_r": (0.6, 2.8),
@@ -42,9 +43,9 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_rad": (-0.35, 0.35),
         "sigma_theta": (0.04, 0.12),
         "s_0": (0.4, 1.8),
-        "sigma_s": (0.0, 0.10),
+        "sigma_s": (0.0, 0.20),
         "omega_max": (0.03, 0.10),
-        "a_max": (0.08, 1.20),
+        "a_max": (0.0, 1.80),
     },
     "expansion": {
         "w_r": (0.4, 2.2),
@@ -54,9 +55,9 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_rad": (0.80, 2.20),
         "sigma_theta": (0.01, 0.06),
         "s_0": (0.4, 1.6),
-        "sigma_s": (0.0, 0.10),
-        "omega_max": (0.06, 0.16),
-        "a_max": (0.40, 1.60),
+        "sigma_s": (0.0, 0.20),
+        "omega_max": (0.06, 0.10),
+        "a_max": (0.0, 2.20),
     },
     "compaction": {
         "w_r": (0.3, 1.8),
@@ -66,9 +67,9 @@ SEARCH_SPACE: dict[str, dict[str, Any]] = {
         "w_rad": (-2.20, -0.80),
         "sigma_theta": (0.01, 0.05),
         "s_0": (0.3, 1.3),
-        "sigma_s": (0.0, 0.08),
-        "omega_max": (0.04, 0.12),
-        "a_max": (0.15, 1.30),
+        "sigma_s": (0.0, 0.16),
+        "omega_max": (0.04, 0.10),
+        "a_max": (0.0, 1.90),
     },
 }
 SEARCH_PARAM_NAMES: tuple[str, ...] = (

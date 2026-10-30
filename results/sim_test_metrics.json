@@ -1,64 +1,65 @@
 {
-  "n_train": 120000,
-  "n_test": 30000,
+  "n_train": 119610,
+  "n_test": 29850,
   "include_transitions": false,
   "stable_only": true,
   "n_classes": 5,
   "train_counts": {
-    "baseline": 150000,
+    "baseline": 149460,
     "transition": 0,
-    "total": 150000
+    "total": 149460
   },
   "features": [
     "phi_trans_mean",
     "phi_tan_mean",
     "phi_rad_pm_mean",
-    "phi_tan_unsigned_mean",
-    "phi_local_mean"
+    "phi_trans_rate",
+    "phi_tan_rate",
+    "phi_rad_pm_rate"
   ],
   "best_params": {
-    "learning_rate": 0.075,
-    "max_depth": 3,
-    "n_estimators": 500
+    "learning_rate": 0.1,
+    "max_depth": 5,
+    "n_estimators": 200
   },
-  "best_sim_macro_f1": 0.8721339880013783,
-  "sim_test_macro_f1": 0.8721339880013783,
-  "grid_search_macro_f1": 0.8721339880013783,
+  "best_sim_macro_f1": 0.8684292402442306,
+  "sim_test_macro_f1": 0.8684292402442306,
+  "grid_search_macro_f1": 0.8684292402442306,
   "confusion_matrix": [
     [
-      5396,
-      27,
-      19,
-      224,
-      334
-    ],
-    [
-      8,
-      5848,
-      31,
-      93,
-      20
-    ],
-    [
-      21,
-      101,
-      5024,
-      40,
-      814
-    ],
-    [
-      141,
-      287,
-      22,
-      5536,
-      14
-    ],
-    [
-      311,
+      5216,
       73,
-      1215,
-      17,
-      4384
+      95,
+      51,
+      565
+    ],
+    [
+      99,
+      5355,
+      106,
+      56,
+      234
+    ],
+    [
+      78,
+      309,
+      5129,
+      82,
+      402
+    ],
+    [
+      94,
+      146,
+      28,
+      5721,
+      11
+    ],
+    [
+      904,
+      180,
+      402,
+      9,
+      4505
     ]
   ],
   "confusion_labels": [

@@ -64,7 +64,7 @@ def main() -> None:
     parser.add_argument(
         "--full",
         action="store_true",
-        help="Full loop: 200 seeds, N in {10,30,50,100,200}",
+        help="Full loop: 100 seeds, N in {10,30,50,100,200}",
     )
     parser.add_argument(
         "--single-trial",
@@ -94,7 +94,7 @@ def main() -> None:
         n_seeds = min(n_seeds, 16)
         n_values = [10, 30]
     if args.full:
-        n_seeds = 200
+        n_seeds = 100
         n_values = [10, 30, 50, 100, 200]
 
     if args.single_trial:

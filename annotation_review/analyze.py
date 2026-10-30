@@ -24,7 +24,7 @@ def sm(x, w=SMOOTH):
 
 def series(ds, w=SMOOTH):
     c = load_cache(ds); fps = float(c["fps"])
-    s = {k: sm(c[k], w) for k in ["phi_trans", "M_tun", "phi_tan", "phi_rad_pm", "phi_tan_unsigned", "phi_local",
+    s = {k: sm(c[k], w) for k in ["phi_trans", "M_tun", "phi_tan", "phi_rad_pm",
                                "vrad_norm", "R", "hull", "nnd", "speed"]}
     logR = np.log(sm(c["R"], 5)); s["rate"] = sm(np.gradient(logR) * fps, w)        # dlogR/dt  [1/s]
     s["hull_rate"] = sm(np.gradient(np.log(np.maximum(sm(c["hull"], 5), 1))) * fps, SMOOTH)
@@ -213,7 +213,6 @@ for ds in IDS:
         pol, mil, swa = states(P, M, TH["hi"], TH["lo"])
         m = dict(P=P.mean(), M=M.mean(), frac_pol=pol.mean(), frac_mill=mil.mean(), frac_swarm=swa.mean(),
                  phi_trans=raw["phi_trans"][sl].mean(), phi_tan=raw["phi_tan"][sl].mean(), phi_rad_pm=raw["phi_rad_pm"][sl].mean(),
-                 phi_tan_unsigned=raw["phi_tan_unsigned"][sl].mean(), phi_local=raw["phi_local"][sl].mean(),
                  vrad_norm=np.nanmean(raw["vrad_norm"][sl]), rate=s["rate"][sl].mean(),
                  dlogR=dlog(s["R"], a, b), dlogHull=dlog(s["hull"], a, b), dlogNND=dlog(s["nnd"], a, b),
                  R=raw["R"][sl].mean(), nnd=raw["nnd"][sl].mean(), speed=np.nanmean(raw["speed"][sl]),

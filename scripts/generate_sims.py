@@ -22,7 +22,7 @@ from src.sim.render import render_simulation
 from src.sim.validate import metrics_for_validation, validate_behavior
 
 N_VALUES = [10, 30, 50, 100, 200]
-N_SEEDS = 200
+N_SEEDS = 100
 TEST_FRAC = 0.2
 
 

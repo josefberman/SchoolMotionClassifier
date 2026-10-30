@@ -37,7 +37,6 @@ def timeline(ds, chunk_s=90):
         a1, a2, a3 = axs[3*k], axs[3*k+1], axs[3*k+2]
         a1.plot(t[a:b], P[a:b], c="k", lw=1, label="polarization P (=Φ_trans)")
         a1.plot(t[a:b], M[a:b], c="g", lw=1, label="rotation M (Tunstrom)")
-        a1.plot(t[a:b], sm(c["phi_local"])[a:b], c="0.6", lw=.7, label="Φ_local")
         for y in (0.35, 0.65): a1.axhline(y, c="0.5", ls=":", lw=.8)
         a1.set_ylim(0, 1); a1.set_ylabel("order"); a1.set_xlim(a, b)
         a2.plot(t[a:b], np.clip(rate[a:b], -1, 1), c="m", lw=1, label="d log R/dt [1/s]")
