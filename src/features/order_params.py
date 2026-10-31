@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-# Instantaneous per-frame values. Classifier samples are 5-frame windows:
-# the mean of each Φ, plus dΦ/dt from the 5-point stencil on that window.
+# Instantaneous per-frame values. Classifier samples are 15-frame windows:
+# the mean of each Φ, plus dΦ/dt from the 15-point stencil on that window.
 FEATURE_NAMES = (
     "phi_trans",
     "phi_tan",
@@ -87,30 +87,40 @@ def compute_order_params_series(
     }
 
 
-def five_point_derivative(samples: np.ndarray, fps: float) -> float:
-    """dΦ/dt in s⁻¹ from five frames spaced by h = 1/fps.
+# Central 15-point weights for f'(x), samples at x-7h .. x+7h, divided by h.
+# Exact for polynomials through degree 14.
+_STENCIL_15 = np.array(
+    [-15, 245, -1911, 9555, -35035, 105105, -315315, 0, 315315, -105105, 35035, -9555, 1911, -245, 15],
+    dtype=np.float64,
+)
+_STENCIL_15_DENOM = 360360.0
 
-    f'(x) ≈ [-f(x+2h) + 8f(x+h) - 8f(x-h) + f(x-2h)] / (12h)
+
+def fifteen_point_derivative(samples: np.ndarray, fps: float) -> float:
+    """dΦ/dt in s⁻¹ from fifteen frames spaced by h = 1/fps.
+
+    The derivative is taken at the center frame. Coefficients are the central
+    15-point first-derivative stencil.
     """
     y = np.asarray(samples, dtype=np.float64)
-    if y.shape != (5,):
-        raise ValueError(f"5-point stencil needs 5 frames, got shape {y.shape}")
+    if y.shape != (15,):
+        raise ValueError(f"15-point stencil needs 15 frames, got shape {y.shape}")
     h = 1.0 / float(fps)
-    return float((-y[4] + 8.0 * y[3] - 8.0 * y[1] + y[0]) / (12.0 * h))
+    return float(np.dot(_STENCIL_15, y) / (_STENCIL_15_DENOM * h))
 
 
 def aggregate_series(
     series: dict[str, np.ndarray],
     fps: float = 30.0,
 ) -> dict[str, float]:
-    """Mean and std of each series, plus the mean 5-point rate over non-overlapping windows."""
+    """Mean and std of each series, plus the mean 15-point rate over non-overlapping windows."""
     feat: dict[str, float] = {}
     for k, arr in series.items():
         feat[f"{k}_mean"] = float(np.mean(arr)) if arr.size else 0.0
         feat[f"{k}_std"] = float(np.std(arr)) if arr.size else 0.0
         rates = [
-            five_point_derivative(arr[start : start + 5], fps)
-            for start in range(0, int(arr.shape[0]) - 4, 5)
+            fifteen_point_derivative(arr[start : start + 15], fps)
+            for start in range(0, int(arr.shape[0]) - 14, 15)
         ]
         feat[f"{k}_rate"] = float(np.mean(rates)) if rates else 0.0
     return feat

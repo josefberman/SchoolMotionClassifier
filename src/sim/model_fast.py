@@ -32,11 +32,15 @@ class FastSchoolSimulator:
         self.fps = float(cfg["fps"])
         arena = cfg["arena"]
         self.center = np.asarray(arena["center"], dtype=np.float64)
-        self.half_extent = float(arena.get("half_extent", arena.get("radius", 420.0)))
-        self.xmin = self.center[0] - self.half_extent
-        self.xmax = self.center[0] + self.half_extent
-        self.ymin = self.center[1] - self.half_extent
-        self.ymax = self.center[1] + self.half_extent
+        # Rectangular tank: half_extent_x / half_extent_y (legacy square: half_extent).
+        legacy = float(arena.get("half_extent", arena.get("radius", 420.0)))
+        self.half_x = float(arena.get("half_extent_x", legacy))
+        self.half_y = float(arena.get("half_extent_y", legacy))
+        self.half_extent = min(self.half_x, self.half_y)
+        self.xmin = self.center[0] - self.half_x
+        self.xmax = self.center[0] + self.half_x
+        self.ymin = self.center[1] - self.half_y
+        self.ymax = self.center[1] + self.half_y
         self.wall_margin = float(arena["wall_margin"])
         self.w_wall = float(arena["w_wall"])
         self.frame = 0
@@ -138,9 +142,10 @@ class FastSchoolSimulator:
 
     def _clip_to_arena(self) -> None:
         cx, cy = self.center
-        hard = self.half_extent * 0.98
-        self.pos[:, 0] = np.clip(self.pos[:, 0], cx - hard, cx + hard)
-        self.pos[:, 1] = np.clip(self.pos[:, 1], cy - hard, cy + hard)
+        hard_x = self.half_x * 0.98
+        hard_y = self.half_y * 0.98
+        self.pos[:, 0] = np.clip(self.pos[:, 0], cx - hard_x, cx + hard_x)
+        self.pos[:, 1] = np.clip(self.pos[:, 1], cy - hard_y, cy + hard_y)
 
     def step(self) -> None:
         cfg = self.cfg
@@ -225,9 +230,10 @@ def run_transition_fast(
     cfg_from["behavior"] = behavior_from
     cfg_to["behavior"] = behavior_to
 
-    he = max(float(cfg_from["arena"]["half_extent"]), float(cfg_to["arena"]["half_extent"]))
-    cfg_from["arena"]["half_extent"] = he
-    cfg_to["arena"]["half_extent"] = he
+    for key in ("half_extent_x", "half_extent_y"):
+        he = max(float(cfg_from["arena"][key]), float(cfg_to["arena"][key]))
+        cfg_from["arena"][key] = he
+        cfg_to["arena"][key] = he
     cfg_from["burn_in"] = burn_in
     cfg_from["record_frames"] = total_frames
 

@@ -13,7 +13,7 @@ from src.classify.train import train_classifier
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train classifier on 5-frame windows of simulated features.")
+    parser = argparse.ArgumentParser(description="Train classifier on 15-frame windows of simulated features.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--transitions",

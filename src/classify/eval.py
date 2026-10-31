@@ -1,4 +1,4 @@
-"""Evaluate trained classifier on 5-frame windows of real annotated segments."""
+"""Evaluate trained classifier on 15-frame windows of real annotated segments."""
 
 from __future__ import annotations
 

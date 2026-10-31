@@ -13,35 +13,51 @@ import numpy as np
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.collections import PatchCollection
 
+from src.sim.config import DEFAULTS
+
 FISH_COLOR = "#3a86ff"
 ARENA = "#b0b0b0"
 BG = "#ffffff"
 PREDATOR = "#c0392b"
 
-FISH_LEN = 15.0
-FISH_WIDTH = 3.0
+# Real tank, shared with the simulator.
+ARENA_CENTER = tuple(float(v) for v in DEFAULTS["arena"]["center"])
+ARENA_HALF = (float(DEFAULTS["arena"]["half_extent_x"]), float(DEFAULTS["arena"]["half_extent_y"]))
+
+# Top-view fish, px. FISH_WIDTH is the body thickness.
+FISH_LEN = 36.0
+FISH_WIDTH = 9.0
 VIDEO_FISH_LEN = FISH_LEN
 STILL_FISH_LEN = FISH_LEN
 FRAME_DPI = 300
-FRAME_FIGSIZE = (3.5, 3.8)
+# Tank is ~1900 x 1020 px (aspect 1.86).
+FRAME_FIGSIZE = (7.0, 4.2)
 
-# Template spans x in [-0.5, 0.5] (length) and y in [-0.5, 0.5] at the widest point (width).
-_FISH_SHAPE = np.array([
+# Outline from snout to tail notch, upper half (x: length, y: half-thickness).
+# Tapered body, narrow peduncle, forked caudal fin.
+_FISH_UPPER = np.array([
     [0.50, 0.00],
-    [0.42, 0.12],
-    [0.25, 0.18],
-    [0.05, 0.16],
-    [-0.15, 0.11],
-    [-0.35, 0.05],
-    [-0.50, 0.00],
-    [-0.35, -0.05],
-    [-0.15, -0.11],
-    [0.05, -0.16],
-    [0.25, -0.18],
-    [0.42, -0.12],
+    [0.47, 0.06],
+    [0.40, 0.13],
+    [0.28, 0.19],
+    [0.12, 0.22],
+    [-0.04, 0.20],
+    [-0.18, 0.14],
+    [-0.28, 0.07],
+    [-0.33, 0.04],
+    [-0.42, 0.14],
+    [-0.50, 0.20],
+    [-0.46, 0.08],
+    [-0.42, 0.00],
 ])
-_FISH_SHAPE = _FISH_SHAPE.copy()
-_FISH_SHAPE[:, 1] /= np.max(np.abs(_FISH_SHAPE[:, 1])) * 2.0
+_FISH_LOWER = _FISH_UPPER[-2:0:-1] * np.array([1.0, -1.0])
+_FISH_SHAPE = np.vstack([_FISH_UPPER, _FISH_LOWER])
+_FISH_SHAPE[:, 1] /= 0.44  # body thickness maps to y in [-0.5, 0.5]
+
+def _headings(vel: np.ndarray) -> np.ndarray:
+    speeds = np.linalg.norm(vel, axis=1)
+    angles = np.arctan2(vel[:, 1], vel[:, 0])
+    return np.where(speeds > 1e-9, angles, 0.0)
 
 
 def _make_fish_patches(
@@ -50,39 +66,38 @@ def _make_fish_patches(
     length: float,
     width: float = FISH_WIDTH,
 ) -> list[Polygon]:
-    """Create rotated fish-shaped polygons for each agent."""
-    n = pos.shape[0]
-    speeds = np.linalg.norm(vel, axis=1)
-    angles = np.arctan2(vel[:, 1], vel[:, 0])
+    """Rotated fish bodies for each agent."""
+    angles = _headings(vel)
     scale = np.array([length, width])
 
-    patches = []
-    for i in range(n):
-        a = angles[i] if speeds[i] > 1e-9 else 0.0
-        cos_a, sin_a = np.cos(a), np.sin(a)
+    bodies = []
+    for i in range(pos.shape[0]):
+        cos_a, sin_a = np.cos(angles[i]), np.sin(angles[i])
         rot = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
-        verts = (rot @ (_FISH_SHAPE * scale).T).T + pos[i]
-        patches.append(Polygon(verts, closed=True))
-    return patches
+        bodies.append(Polygon((rot @ (_FISH_SHAPE * scale).T).T + pos[i], closed=True))
+    return bodies
 
 
 def _arena_rect(
     positions: np.ndarray,
     center: Sequence[float] | None = None,
-    half_extent: float | None = None,
+    half_extent: float | tuple[float, float] | None = None,
     pad: float = 40.0,
-) -> tuple[np.ndarray, float, tuple[float, float, float, float]]:
-    """Return center, half_extent, and (xmin, xmax, ymin, ymax) limits for framing."""
+) -> tuple[np.ndarray, tuple[float, float], tuple[float, float, float, float]]:
+    """Return center, (half_x, half_y), and (xmin, xmax, ymin, ymax) limits for framing."""
     if center is None:
         c = positions.reshape(-1, 2).mean(axis=0)
     else:
         c = np.asarray(center, dtype=float)
     if half_extent is None:
         rel = positions.reshape(-1, 2) - c
-        he = float(max(np.max(np.abs(rel[:, 0])), np.max(np.abs(rel[:, 1]))) * 1.12 + pad * 0.5)
+        he_s = float(max(np.max(np.abs(rel[:, 0])), np.max(np.abs(rel[:, 1]))) * 1.12 + pad * 0.5)
+        he = (he_s, he_s)
+    elif isinstance(half_extent, (tuple, list)):
+        he = (float(half_extent[0]), float(half_extent[1]))
     else:
-        he = float(half_extent)
-    lim = (c[0] - he - pad, c[0] + he + pad, c[1] - he - pad, c[1] + he + pad)
+        he = (float(half_extent), float(half_extent))
+    lim = (c[0] - he[0] - pad, c[0] + he[0] + pad, c[1] - he[1] - pad, c[1] + he[1] + pad)
     return c, he, lim
 
 
@@ -117,7 +132,7 @@ def _draw_frame(
     vel: np.ndarray,
     *,
     center: np.ndarray,
-    half_extent: float,
+    half_extent: tuple[float, float],
     limits: tuple[float, float, float, float],
     fish_len: float = STILL_FISH_LEN,
     arrow_scale: float = 0.35,
@@ -134,9 +149,9 @@ def _draw_frame(
     if show_arena:
         ax.add_patch(
             Rectangle(
-                (center[0] - half_extent, center[1] - half_extent),
-                2 * half_extent,
-                2 * half_extent,
+                (center[0] - half_extent[0], center[1] - half_extent[1]),
+                2 * half_extent[0],
+                2 * half_extent[1],
                 fill=False,
                 edgecolor=ARENA,
                 linewidth=1.0,
@@ -144,9 +159,8 @@ def _draw_frame(
             )
         )
 
-    patches = _make_fish_patches(pos, vel, fish_len)
-    col = PatchCollection(patches, facecolor=FISH_COLOR, edgecolor="none", alpha=0.92, zorder=2)
-    ax.add_collection(col)
+    bodies = _make_fish_patches(pos, vel, fish_len, width=fish_len * FISH_WIDTH / FISH_LEN)
+    ax.add_collection(PatchCollection(bodies, facecolor=FISH_COLOR, edgecolor="none", alpha=0.92, zorder=2))
 
     if predator is not None:
         ax.scatter(
@@ -307,8 +321,8 @@ def render_simulation(
     *,
     behavior: str | None = None,
     fps: float = 30.0,
-    center: Sequence[float] | None = (1100.0, 750.0),
-    half_extent: float | None = 420.0,
+    center: Sequence[float] | None = ARENA_CENTER,
+    half_extent: float | tuple[float, float] | None = ARENA_HALF,
     video: bool = True,
     stills: bool = True,
     video_stride: int = 1,

@@ -20,7 +20,7 @@ Behavior differences come from a 13-parameter set (`r_r, r_o, r_a, w_r, w_o, w_a
 
 One model for all behaviors. Social interactions use exclusive Couzin zones (`d < r_r` repulsion, `r_r ≤ d < r_o` orientation, `r_o ≤ d < r_a` attraction). Heading noise `epsilon_w_i` and speed noise `epsilon_a_i` are sampled i.i.d. `Normal(0,1)` each step and are not YAML parameters. Arena, `dt`, `burn_in`, and `record_frames` are simulation metadata.
 
-Classifier inputs are non-overlapping 5-frame windows. Each window contributes the mean of **Φ_trans**, **Φ_tan**, and **Φ_rad^±**, and the time derivative of each from the 5-point stencil on those five frames (h = 1/fps). Training and evaluation inverse-weight classes by window count.
+Classifier inputs are non-overlapping 15-frame windows (0.5 s). Each window contributes the mean of **Φ_trans**, **Φ_tan**, and **Φ_rad^±**, and the time derivative of each from the 15-point stencil on those fifteen frames (h = 1/fps, derivative at the center frame). The same windows are used for simulated training clips and real test segments. Training and evaluation inverse-weight classes by window count.
 
 ## Layout
 
@@ -77,7 +77,7 @@ Outputs land in `sim_datasets/.../renders/` or `results/figures/<behavior>/`.
 
 ## Calibrate / inspect signatures
 
-Summarizes mean/std of the five 5-frame-window order-parameter features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
+Summarizes mean/std of the 15-frame-window order-parameter features per behavior. Default source is generated sims (`sim_datasets/manifest.json`); use `--source real` for manual annotations.
 
 ```bash
 python scripts/calibrate_baselines.py

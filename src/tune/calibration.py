@@ -111,7 +111,7 @@ def behavior_calibration_loss(
 ) -> float:
     """Weighted MSE of sim vs real feature means and stds (lower is better).
 
-    Each window feature (Φ mean and 5-point dΦ/dt) contributes equally-weighted
+    Each window feature (Φ mean and 15-point dΦ/dt) contributes equally-weighted
     mean and std residuals, scaled by the real-window std. Targets that do not
     yet store a feature are skipped.
     """

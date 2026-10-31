@@ -17,9 +17,11 @@ DEFAULTS: dict[str, Any] = {
     # Frame-based integration: positions/velocities match real CSV units (px/frame).
     "dt": 1.0,
     "arena": {
-        "shape": "square",
-        "center": [1100.0, 750.0],
-        "half_extent": 420.0,
+        # Real tank (px): x 17-1916, y 11-1053 across all datasets.
+        "shape": "rectangle",
+        "center": [967.0, 522.0],
+        "half_extent_x": 950.0,
+        "half_extent_y": 510.0,
         "wall_margin": 40.0,
         "w_wall": 2.5,
     },
