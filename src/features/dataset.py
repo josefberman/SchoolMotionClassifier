@@ -56,8 +56,8 @@ def features_from_sim_entry(
 
     Baseline clips use the full recording. Transition clips use only the morph
     window (morph_start .. morph_end) so features match real transition segments.
-    mode='windows' emits one row per non-overlapping 15-frame window
-    (mean Φ and its 15-point time derivative).
+    mode='windows' emits one row per non-overlapping 5-frame window
+    (mean Φ and its 5-point time derivative).
     """
     sim_root = sim_root or (ROOT / "sim_datasets")
     csv_path = Path(entry["csv"])
@@ -165,7 +165,7 @@ def load_real_segments(
                 continue
             start = mmss_to_frame(seg["start"], fps)
             end = mmss_to_frame(seg["end"], fps)
-            if end - start < int(0.5 * fps):
+            if end - start < WINDOW_FRAMES:
                 continue
             out.append(
                 {
@@ -181,7 +181,7 @@ def load_real_segments(
 
 
 def build_real_xy(
-    min_frames: int = 15,
+    min_frames: int = WINDOW_FRAMES,
     include_transitions: bool = True,
     stable_only: bool = False,
     mode: str = "windows",

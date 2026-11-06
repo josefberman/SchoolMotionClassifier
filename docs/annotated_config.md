@@ -1,6 +1,6 @@
 # How `annotated_config.csv` is calculated
 
-Produced by `python scripts/tune_trajectories.py --extract` (`build_annotated_config` in `src/tune/trajectory_match.py`). One row per non-overlapping 15-frame window (0.5 s at 29.97 fps) inside a canonical annotation interval. A trailing piece shorter than 15 frames is dropped. Transition labels (`a_to_b`) are not included. Intervals shorter than `0.5 * fps` are already dropped by `load_real_segments`.
+Produced by `python scripts/tune_trajectories.py --extract` (`build_annotated_config` in `src/tune/trajectory_match.py`). One row per non-overlapping 5-frame window inside a canonical annotation interval. A trailing piece shorter than 5 frames is dropped. Transition labels (`a_to_b`) are not included. Intervals shorter than 5 frames are already dropped by `load_real_segments`.
 
 Positions and velocities come from `schooling-datasets/{group}/{id}/{id}_loc_vel_data.csv`. Velocity components are pixels per frame. The fit uses a frame step of 1, so every rate below is per frame.
 
@@ -13,8 +13,8 @@ If a window has more than 30,000 fish-steps, the Tobit fit uses a fixed sample o
 | column | value |
 |---|---|
 | `dataset` | Dataset id. Digit-only ids are written as integers, so `0066` becomes `66`. |
-| `start_frame` | First frame of the 15-frame window. |
-| `end_frame` | Frame after the window (`start_frame + 15`). |
+| `start_frame` | First frame of the 5-frame window. |
+| `end_frame` | Frame after the window (`start_frame + 5`). |
 | `fps` | Frames per second stored with the annotation. Not used in the fit. |
 | `label` | Canonical behavior: `traveling`, `milling`, `shoaling`, `expansion`, or `compaction`. |
 
@@ -53,7 +53,7 @@ Both fits are two-sided Tobit maximum likelihood: rows with `|y|` strictly insid
 
 ## `r_r`, `r_o`, `r_a`
 
-These are chosen before the other parameters by minimizing the heading Tobit negative log-likelihood. The search is continuous inside `r_r` 10–80, `r_o` 40–250, `r_a` 80–500, with `r_r + 1 < r_o` and `r_o + 1 < r_a`. Differential evolution proposes any ordered triple in that box. Each proposal is scored by the heading Tobit loss at the nonnegative least-squares weights. The ten parameters below are then the full Tobit fit on the same 15-frame window at the winning radii. Speed does not depend on the radii.
+These are chosen before the other parameters by minimizing the heading Tobit negative log-likelihood. The search is continuous inside `r_r` 5–200, `r_o` 10–500, `r_a` 20–1000, with `r_r + 1 < r_o` and `r_o + 1 < r_a`. Differential evolution proposes any ordered triple in that box. Each proposal is scored by the heading Tobit loss at the nonnegative least-squares weights. Four independent runs (seeds 0–3) each use a population of 45 and at most 40 iterations. The triple with the lowest score is kept. The ten parameters below are then the full Tobit fit on the same 5-frame window at the winning radii. Speed does not depend on the radii.
 
 ## Heading parameters
 

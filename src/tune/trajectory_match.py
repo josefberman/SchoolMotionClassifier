@@ -1,11 +1,11 @@
 """Tune behavior YAMLs so simulations reproduce configs extracted from real tracks.
 
-1. Extraction: each 15-frame window of an annotation interval becomes one row of
+1. Extraction: each 5-frame window of an annotation interval becomes one row of
    annotated_config.csv.
    The fit is the simulator's own update: heading and speed changes are a
    clipped normal (Tobit) of the zone torques and of (s_0 - speed). The clip
    levels are omega_max and a_max, so the fitted numbers are YAML parameters.
-   r_r, r_o, r_a are the ordered triple inside r_r 10-80, r_o 40-250, r_a 80-500
+   r_r, r_o, r_a are the ordered triple inside r_r 5-200, r_o 10-500, r_a 20-1000
    with the best heading likelihood. Any value inside those limits is allowed.
 2. Tuning: radii stay at the per-behavior mean of the extracted triples. CMA-ES
    searches the other SEARCH_SPACE parameters so simulated estimates match the
@@ -43,16 +43,20 @@ ID_COLUMNS = ("dataset", "start_frame", "end_frame", "fps", "label")
 MIN_STEPS = 10
 SPEED_EPS = 1e-3
 _FIT_ROWS = 30000
-# 15 frames at 29.97 fps is 0.5 s. Non-overlapping; a short tail is dropped.
-EXTRACT_WINDOW_FRAMES = 15
+# Non-overlapping; a short tail is dropped.
+EXTRACT_WINDOW_FRAMES = 5
 _WEIGHTS = ("w_r", "w_o", "w_a", "w_tan", "w_rad")
 RADIUS_COLUMNS = ("r_r", "r_o", "r_a")
 # Continuous search box. Every ordered triple inside it is a legal zone.
-_R_R = (10.0, 80.0)
-_R_O = (40.0, 250.0)
-_R_A = (80.0, 500.0)
+_R_R = (5.0, 200.0)
+_R_O = (10.0, 500.0)
+_R_A = (20.0, 1000.0)
 _RADIUS_GAP = 1.0
 _RADIUS_SEARCH_FRAMES = 120
+# Population is popsize * 3. Each seed is an independent run; the best score is kept.
+_RADIUS_POPSIZE = 15
+_RADIUS_MAXITER = 40
+_RADIUS_SEEDS = 4
 
 
 def _dataset_id(dataset: str) -> int | str:
@@ -269,8 +273,9 @@ def _heading_nll_radii(geoms: list[tuple], radii: tuple[float, float, float], om
 def fit_radii(pos: np.ndarray, vel: np.ndarray) -> dict[str, float] | None:
     """Zone radii inside the box with the best heading likelihood.
 
-    Any ordered triple with r_r in [10, 80], r_o in [40, 250], r_a in [80, 500]
-    is allowed. Differential evolution searches that box.
+    Any ordered triple with r_r in [5, 200], r_o in [10, 500], r_a in [20, 1000]
+    is allowed. Several differential-evolution runs search that box. The triple
+    with the lowest score is kept.
     """
     from scipy.optimize import differential_evolution
 
@@ -288,23 +293,29 @@ def fit_radii(pos: np.ndarray, vel: np.ndarray) -> dict[str, float] | None:
     def objective(unit: np.ndarray) -> float:
         return _heading_nll_radii(geoms, _radii_from_unit(unit), omega)
 
-    fit = differential_evolution(
-        objective,
-        bounds=[(0.0, 1.0), (0.0, 1.0), (0.0, 1.0)],
-        seed=0,
-        popsize=4,
-        maxiter=12,
-        mutation=0.5,
-        recombination=0.7,
-        atol=0.0,
-        tol=1e-3,
-        polish=False,
-        workers=1,
-        updating="immediate",
-    )
-    radii = _radii_from_unit(fit.x)
-    if not np.isfinite(fit.fun) or fit.fun >= 1e6:
+    best_x = None
+    best_fun = np.inf
+    for seed in range(_RADIUS_SEEDS):
+        fit = differential_evolution(
+            objective,
+            bounds=[(0.0, 1.0), (0.0, 1.0), (0.0, 1.0)],
+            seed=seed,
+            popsize=_RADIUS_POPSIZE,
+            maxiter=_RADIUS_MAXITER,
+            mutation=0.5,
+            recombination=0.7,
+            atol=0.0,
+            tol=1e-3,
+            polish=False,
+            workers=1,
+            updating="immediate",
+        )
+        if np.isfinite(fit.fun) and fit.fun < best_fun:
+            best_fun = float(fit.fun)
+            best_x = np.asarray(fit.x, dtype=np.float64)
+    if best_x is None or best_fun >= 1e6:
         return None
+    radii = _radii_from_unit(best_x)
     return {"r_r": radii[0], "r_o": radii[1], "r_a": radii[2]}
 
 
@@ -368,7 +379,7 @@ def build_annotated_config(
     radii: dict[str, float] | None = None,
     behaviors: list[str] | None = None,
 ) -> pd.DataFrame:
-    """One row per non-overlapping 15-frame window inside each canonical interval."""
+    """One row per non-overlapping 5-frame window inside each canonical interval."""
     del radii
     allowed = set(behaviors or CANONICAL)
     sim = _torque_calculator({"r_r": 50.0, "r_o": 100.0, "r_a": 150.0})
