@@ -23,7 +23,7 @@ def predict_trajectory(
     fps: float = 30.0,
     column: str = "predicted_behavior",
 ) -> pd.DataFrame:
-    """Label 5-frame windows and write those labels onto the corresponding frames."""
+    """Label 15-frame windows and write those labels onto the corresponding frames."""
     trajectory_path = Path(trajectory_path)
     model_path = Path(model_path or (ROOT / "results" / "classifier.joblib"))
     out_path = Path(out_path) if out_path is not None else None

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Tune behavior YAMLs to match configs extracted from real trajectories.
 
-  --extract      fit one config per 5-frame window -> annotated_config.csv,
-                 including r_r, r_o, r_a (any ordered triple inside the radius bounds)
+  --extract      fit one config per 15-frame window -> annotated_config.csv,
+                 including r_r, r_o, r_a (any ordered triple inside the radius bounds).
+                 With --fixed-radii, every window uses --r-r/--r-o/--r-a instead.
   (default)      CMA-ES over SEARCH_SPACE at the mean extracted radii. Radii are
                  not searched again. Matches mean and std (Huber loss).
+                 With --fixed-radii, every behavior uses --r-r/--r-o/--r-a instead.
   --apply-best   write results/tuning/trajectory_match/best.json into the YAMLs,
                  including those radii.
 """
@@ -79,6 +81,11 @@ def main() -> None:
     parser.add_argument("--r-r", type=float, default=float(DEFAULTS["r_r"]))
     parser.add_argument("--r-o", type=float, default=float(DEFAULTS["r_o"]))
     parser.add_argument("--r-a", type=float, default=float(DEFAULTS["r_a"]))
+    parser.add_argument(
+        "--fixed-radii",
+        action="store_true",
+        help="Use --r-r/--r-o/--r-a for every window (--extract) and every behavior (tuning)",
+    )
     parser.add_argument("--apply-best", action="store_true", help="Write best.json into configs/behaviors/*.yaml")
     parser.add_argument("--dry-run", action="store_true", help="With --apply-best, print paths only")
     args = parser.parse_args()
@@ -91,7 +98,7 @@ def main() -> None:
         return
 
     if args.extract:
-        frame = build_annotated_config(radii=radii, behaviors=args.behaviors)
+        frame = build_annotated_config(radii=radii if args.fixed_radii else None, behaviors=args.behaviors)
         csv_path = save_annotated_config(frame, args.csv)
         _print_extraction(frame)
         print(f"\nAnnotated configs: {csv_path}")
@@ -111,6 +118,7 @@ def main() -> None:
         n_seeds=n_seeds,
         n_values=n_values,
         n_jobs=args.n_jobs,
+        radii=radii if args.fixed_radii else None,
     )
     _print_tuned(summary)
     print(f"\nBest config: {BEST_PATH}")

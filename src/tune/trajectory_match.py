@@ -1,6 +1,6 @@
 """Tune behavior YAMLs so simulations reproduce configs extracted from real tracks.
 
-1. Extraction: each 5-frame window of an annotation interval becomes one row of
+1. Extraction: each 15-frame window of an annotation interval becomes one row of
    annotated_config.csv.
    The fit is the simulator's own update: heading and speed changes are a
    clipped normal (Tobit) of the zone torques and of (s_0 - speed). The clip
@@ -44,7 +44,7 @@ MIN_STEPS = 10
 SPEED_EPS = 1e-3
 _FIT_ROWS = 30000
 # Non-overlapping; a short tail is dropped.
-EXTRACT_WINDOW_FRAMES = 5
+EXTRACT_WINDOW_FRAMES = 15
 _WEIGHTS = ("w_r", "w_o", "w_a", "w_tan", "w_rad")
 RADIUS_COLUMNS = ("r_r", "r_o", "r_a")
 # Continuous search box. Every ordered triple inside it is a legal zone.
@@ -379,10 +379,17 @@ def build_annotated_config(
     radii: dict[str, float] | None = None,
     behaviors: list[str] | None = None,
 ) -> pd.DataFrame:
-    """One row per non-overlapping 5-frame window inside each canonical interval."""
-    del radii
+    """One row per non-overlapping 15-frame window inside each canonical interval.
+
+    With ``radii`` every window uses that triple. Without it each window's radii
+    come from ``fit_radii``.
+    """
+    fixed = None
+    if radii is not None:
+        fixed = {k: float(radii[k]) for k in RADIUS_COLUMNS}
+        validate_radii(fixed)
     allowed = set(behaviors or CANONICAL)
-    sim = _torque_calculator({"r_r": 50.0, "r_o": 100.0, "r_a": 150.0})
+    sim = _torque_calculator(fixed or {"r_r": 50.0, "r_o": 100.0, "r_a": 150.0})
     segments = [s for s in load_real_segments() if s["label"] in allowed]
 
     by_csv: dict[str, list[dict]] = {}
@@ -400,7 +407,7 @@ def build_annotated_config(
             b = min(int(seg["end"]), pos.shape[0])
             for start in range(a, b - EXTRACT_WINDOW_FRAMES + 1, EXTRACT_WINDOW_FRAMES):
                 end = start + EXTRACT_WINDOW_FRAMES
-                fitted = fit_radii(pos[start:end], vel[start:end])
+                fitted = dict(fixed) if fixed else fit_radii(pos[start:end], vel[start:end])
                 if fitted is None:
                     continue
                 sim.cfg["r_r"], sim.cfg["r_o"], sim.cfg["r_a"] = fitted["r_r"], fitted["r_o"], fitted["r_a"]
@@ -653,10 +660,22 @@ def tune_all_behaviors(
     n_seeds: int = 6,
     n_values: list[int] | None = None,
     n_jobs: int = -1,
+    radii: dict[str, float] | None = None,
 ) -> dict[str, Any]:
-    """Tune every behavior at the mean extracted radii. Radii are not search variables."""
+    """Tune every behavior at fixed radii. Radii are not search variables.
+
+    With ``radii`` every behavior uses that one triple. Without it each behavior
+    uses the mean of its extracted triples.
+    """
     n_values = n_values or [10, 30, 70]
-    locked = behavior_radii(frame)
+    if radii is None:
+        locked = behavior_radii(frame)
+        source = "extraction"
+    else:
+        shared = {k: float(radii[k]) for k in RADIUS_COLUMNS}
+        validate_radii(shared)
+        locked = {b: dict(shared) for b in SEARCH_SPACE}
+        source = "command line"
     behaviors = behaviors or [b for b in CANONICAL if b in locked]
     rng = np.random.default_rng()
 
@@ -669,21 +688,21 @@ def tune_all_behaviors(
         per_behavior.update(prev.get("per_behavior") or {})
 
     for behavior in behaviors:
-        radii = locked[behavior]
+        zones = locked[behavior]
         clips = load_behavior_clips(behavior)
         print(f"=== {behavior} ===")
         print(
-            f"  radii fixed from extraction: "
-            f"r_r={radii['r_r']:.1f} r_o={radii['r_o']:.1f} r_a={radii['r_a']:.1f} "
+            f"  radii fixed from {source}: "
+            f"r_r={zones['r_r']:.1f} r_o={zones['r_o']:.1f} r_a={zones['r_a']:.1f} "
             f"({len(clips)} intervals)"
         )
-        target = real_target_stats(clips, behavior, radii)
+        target = real_target_stats(clips, behavior, zones)
         if target is None:
-            raise RuntimeError(f"No real estimates for {behavior} at the extracted radii")
+            raise RuntimeError(f"No real estimates for {behavior} at the fixed radii")
         res = tune_behavior(
             behavior,
             target,
-            radii=radii,
+            radii=zones,
             n_trials=n_trials,
             n_seeds=n_seeds,
             n_values=n_values,
@@ -701,6 +720,7 @@ def tune_all_behaviors(
     summary = {
         "started_at": datetime.now(timezone.utc).isoformat(),
         "source": "annotated_config.csv",
+        "radii_source": source,
         "n_trials_per_behavior": n_trials,
         "n_seeds": n_seeds,
         "n_values": n_values,

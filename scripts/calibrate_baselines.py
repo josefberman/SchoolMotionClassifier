@@ -125,7 +125,7 @@ def _print_report(report: dict[str, dict], *, title: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Mean/std of 5-frame window order parameters per behavior (sim manifest and/or real annotations).",
+        description="Mean/std of 15-frame window order parameters per behavior (sim manifest and/or real annotations).",
     )
     parser.add_argument(
         "--source",

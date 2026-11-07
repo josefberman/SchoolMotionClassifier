@@ -56,7 +56,7 @@ def features_from_sim_entry(
 
     Baseline clips use the full recording. Transition clips use only the morph
     window (morph_start .. morph_end) so features match real transition segments.
-    mode='windows' emits one row per non-overlapping 5-frame window
+    mode='windows' emits one row per non-overlapping 15-frame window
     (mean Φ and its 5-point time derivative).
     """
     sim_root = sim_root or (ROOT / "sim_datasets")

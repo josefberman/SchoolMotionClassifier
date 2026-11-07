@@ -135,7 +135,7 @@ def tune_behavior(
         print(f"  CMA-ES: {n_trials} evaluations in {dim}D  (σ0={sigma0}, λ={popsize})")
         print(f"  search  {', '.join(tuned)}")
         print(
-            f"  matching mean+std of {len(CALIBRATION_FEATURE_NAMES)} 5-frame window features: "
+            f"  matching mean+std of {len(CALIBRATION_FEATURE_NAMES)} 15-frame window features: "
             f"{', '.join(CALIBRATION_FEATURE_NAMES)}"
         )
         print(f"  target  {_feat_progress(target_block['features'])}")
